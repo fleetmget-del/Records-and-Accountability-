@@ -1,0 +1,1211 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Barangay Vehicle Accountability</title><style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:wght@400;500;600&family=Roboto:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: one working column. A title bar, a row of tabs (one per document type),
+   then either a records table, an entry form, or a paper preview of the document. */
+:root {
+  --bg: #EDF1EF;
+  --surface: #FFFFFF;
+  --surface-2: #F5F8F6;
+  --ink: #14211C;
+  --muted: #586A63;
+  --line: #D3DCD8;
+  --accent: #17624A;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DCEDE5;
+  --plate-bg: #FFFFFF;
+  --plate-ink: #B3261E;
+  --ok: #1B6E40;
+  --ok-soft: #D9F0E2;
+  --warn: #8A5200;
+  --warn-soft: #FBEBCB;
+  --bad: #A8231C;
+  --bad-soft: #F9DEDC;
+  --paper: #FFFFFF;
+  --paper-ink: #111111;
+  --shadow: 0 1px 2px rgba(20, 33, 28, .08), 0 6px 20px rgba(20, 33, 28, .06);
+  --display: "Archivo", "Arial Narrow", Arial, sans-serif;
+  --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1513; --surface: #171F1C; --surface-2: #1E2824; --ink: #E5ECE9; --muted: #9AABA4;
+    --line: #2D3A35; --accent: #5CC29B; --accent-ink: #06231A; --accent-soft: #1C392F;
+    --plate-bg: #F4F4F1; --plate-ink: #B3261E;
+    --ok: #74D6A0; --ok-soft: #173526; --warn: #F0C36A; --warn-soft: #3A2D10; --bad: #FF9389; --bad-soft: #40201D;
+    --paper: #FFFFFF; --paper-ink: #111111;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 20px rgba(0, 0, 0, .3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1513; --surface: #171F1C; --surface-2: #1E2824; --ink: #E5ECE9; --muted: #9AABA4;
+  --line: #2D3A35; --accent: #5CC29B; --accent-ink: #06231A; --accent-soft: #1C392F;
+  --plate-bg: #F4F4F1; --plate-ink: #B3261E;
+  --ok: #74D6A0; --ok-soft: #173526; --warn: #F0C36A; --warn-soft: #3A2D10; --bad: #FF9389; --bad-soft: #40201D;
+  --paper: #FFFFFF; --paper-ink: #111111;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 20px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 56px; display: flex; flex-direction: column; gap: 16px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; line-height: 1.2; }
+h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.01em; }
+h2 { font-size: 1.15rem; font-weight: 600; }
+h3 { font-size: .98rem; font-weight: 600; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+
+.top { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: flex-end; justify-content: space-between; }
+.top .who { color: var(--muted); font-size: .9rem; }
+.store { font-size: .8rem; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+.store i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); display: inline-block; }
+.store.local i { background: var(--warn); }
+
+.tabs-scroll { overflow-x: auto; border-bottom: 1px solid var(--line); }
+.tabs { display: flex; gap: 4px; min-width: max-content; }
+.tab { font: 600 .92rem var(--body); color: var(--muted); background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 14px; cursor: pointer; }
+.tab:hover { color: var(--ink); }
+.tab[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+.tab .n { font: 500 .75rem var(--mono); color: var(--muted); margin-left: 6px; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-weight: 600; font-size: .9rem; white-space: nowrap; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.quiet { background: transparent; border-color: transparent; color: var(--accent); padding-inline: 8px; }
+.btn.quiet:hover { background: var(--accent-soft); }
+.btn.danger { color: var(--bad); }
+.btn.danger:hover { border-color: var(--bad); }
+.btn[disabled] { opacity: .55; cursor: default; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.row.between { justify-content: space-between; }
+.grow { flex: 1 1 200px; min-width: 0; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.panel-head { padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.panel-body { padding: 16px; }
+
+.stats { display: flex; flex-wrap: wrap; gap: 6px 28px; }
+.stat { display: flex; align-items: baseline; gap: 8px; }
+.stat b { font: 700 1.35rem var(--display); font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: .88rem; }
+
+.table-wrap { overflow-x: auto; }
+table.list { width: 100%; border-collapse: collapse; font-size: .9rem; }
+table.list th { text-align: left; font: 600 .72rem var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.list td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.list tr:last-child td { border-bottom: 0; }
+table.list td.act { white-space: nowrap; text-align: right; }
+table.list .sub { color: var(--muted); font-size: .82rem; }
+.num { font-family: var(--mono); font-size: .84rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.plate { display: inline-block; font: 600 .86rem var(--mono); letter-spacing: .08em; color: var(--plate-ink); background: var(--plate-bg); border: 1.5px solid var(--plate-ink); border-radius: 4px; padding: 1px 7px; white-space: nowrap; }
+.plate.none { color: var(--muted); border-color: var(--line); background: transparent; letter-spacing: 0; font-family: var(--body); font-weight: 500; }
+.pill { display: inline-block; font-size: .76rem; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.idle { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
+
+.empty { padding: 28px 16px; display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.steps { margin: 0; padding-left: 1.3rem; display: flex; flex-direction: column; gap: 6px; max-width: 65ch; }
+.steps b { font-weight: 600; }
+
+form.entry { display: flex; flex-direction: column; gap: 18px; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+legend { font: 600 .98rem var(--display); padding: 0; margin-bottom: 2px; }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px 14px; }
+.fld { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fld > span { font-size: .8rem; font-weight: 600; color: var(--muted); }
+.fld .req { font-weight: 500; color: var(--bad); font-size: .72rem; margin-left: 4px; }
+.fld small { color: var(--muted); font-size: .76rem; }
+.fld.wide { grid-column: 1 / -1; }
+input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); min-width: 0; }
+textarea { resize: vertical; min-height: 64px; }
+input:hover, select:hover, textarea:hover { border-color: var(--muted); }
+.checks { display: grid; gap: 8px; }
+.check { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(120px, .8fr) minmax(0, 1.4fr); gap: 8px; align-items: center; }
+.check > span { font-size: .9rem; }
+@media (max-width: 620px) { .check { grid-template-columns: 1fr; gap: 4px; padding-bottom: 8px; border-bottom: 1px dashed var(--line); } }
+.note { background: var(--surface-2); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 4px; padding: 10px 12px; font-size: .88rem; max-width: 80ch; }
+.note.warn { border-left-color: var(--warn); }
+.err { background: var(--bad-soft); color: var(--bad); border-radius: 6px; padding: 10px 12px; font-size: .9rem; font-weight: 500; }
+
+.paper-wrap { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 14px 0; overflow: hidden; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+.sheet { background: var(--paper); color: var(--paper-ink); box-shadow: var(--shadow); font: 10pt/1.36 Roboto, Arial, Helvetica, sans-serif; flex: none; white-space: pre-wrap; }
+.sheet table.dt { border-collapse: collapse; width: 100%; table-layout: fixed; }
+.sheet table.dt td { border: .75pt solid #000; padding: 2pt 4pt; vertical-align: top; overflow-wrap: anywhere; }
+.sheet ol { margin: 0; padding-left: 16pt; }
+.sheet ol li { padding-left: 2pt; }
+
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 8px; font-size: .9rem; font-weight: 500; max-width: min(92vw, 520px); box-shadow: var(--shadow); z-index: 10; }
+@media (prefers-reduced-motion: no-preference) { .toast { animation: rise .18s ease-out; } }
+#print-root { display: none; }
+.sheet tr { break-inside: avoid; }
+@media print {
+  body { background: #fff !important; }
+  #app, .toast { display: none !important; }
+  #print-root { display: block; }
+  #print-root .sheet { box-shadow: none; break-after: page; }
+  #print-root .sheet:last-child { break-after: auto; }
+}
+@keyframes rise { from { opacity: .4; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
+</style>
+
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<div id="print-root"></div>
+
+<script>
+/*APP-START*/
+(() => {
+'use strict';
+
+/* ---------- constants ---------- */
+const app = document.getElementById('app');
+const NB = ' ';
+const DISTRICTS = ['Arevalo', 'City Proper', 'Jaro', 'La Paz', 'Lapuz', 'Mandurriao', 'Molo'];
+const VTYPES = ['Multicab', 'Pickup', 'Van', 'Patrol vehicle', 'Ambulance / rescue vehicle', 'Motorcycle', 'Tricycle', 'Mini dump truck', 'Truck', 'Other'];
+const POSITIONS = ['Punong Barangay', 'Barangay Kagawad', 'Barangay Secretary', 'Barangay Treasurer', 'SK Chairperson', 'Chief Tanod'];
+const CONDITIONS = ['Serviceable', 'Under repair', 'Unserviceable'];
+const CHECK_ITEMS = ['Body and paint', 'Windshield, windows and mirrors', 'Tires and spare tire', 'Engine', 'Brakes', 'Lights and horn', 'Battery', 'Seats and interior', 'Tools, jack and early warning device', 'Plates and "For Official Use Only" markings', 'Keys (all sets)', 'OR/CR and insurance papers'];
+const CHECK_STATUS = ['OK', 'With defect', 'Missing', 'Not applicable'];
+const TURN_TYPES = [['return', 'Return to the issuing office'], ['successor', 'Turnover to successor in office'], ['reassign', 'Reassignment to another official or barangay']];
+const TURN_REASONS = ['End of term', 'Resignation', 'Suspension or removal from office', 'Recall by the owner', 'For repair', 'For disposal', 'Other'];
+const TABS = [['registry', 'Vehicles'], ['receipts', 'Issuance'], ['trips', 'Trip tickets'], ['turnover', 'Turnover'], ['audit', 'Duplicate audit'], ['settings', 'Settings']];
+const COL = { registry: 'vehicles', receipts: 'issuances', trips: 'trips', turnover: 'turnovers' };
+const DEFAULTS = {
+  header1: 'Republic of the Philippines', header2: 'City of Iloilo', lgu: 'City Government of Iloilo', place: 'Iloilo City',
+  office: 'General Services Office', gsoName: '', gsoPosition: 'City General Services Officer',
+  notedName: '', notedPosition: 'City Mayor', auditor: 'City Auditor', paper: 'A4', parTitle: 'PROPERTY ACKNOWLEDGMENT RECEIPT',
+  legalBasis: 'Basis: Secs. 375 to 379, R.A. No. 7160 (Local Government Code); Secs. 101 to 105, P.D. No. 1445 (Government Auditing Code); COA Circular Nos. 75-6, 75-6A and 77-61.',
+  extraTerms: ''
+};
+
+/* ---------- state ---------- */
+const data = { vehicles: [], issuances: [], trips: [], turnovers: [], settings: { ...DEFAULTS } };
+const ui = { tab: 'registry', mode: 'list', id: null, draft: null, q: '', flt: 'all', ready: false, shared: false, canWrite: true, confirm: null, editing: false, storeError: false, importPlan: null };
+let db = null, downloads = null;
+const LS = 'bva-records-v1';
+
+/* ---------- helpers ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const today = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const fmtDate = d => { if (!d) return ''; const x = new Date(d + 'T00:00:00'); return isNaN(x) ? String(d) : x.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }); };
+const fmtTime = t => { if (!t) return ''; const [h, m] = String(t).split(':').map(Number); if (isNaN(h)) return String(t); return `${((h + 11) % 12) + 1}:${String(m || 0).padStart(2, '0')} ${h < 12 ? 'a.m.' : 'p.m.'}`; };
+const fmtNum = n => Number(n).toLocaleString('en-PH', { maximumFractionDigits: 2 });
+const fmtMoney = n => (n === '' || n == null || isNaN(Number(n))) ? '' : 'PHP ' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const U = (v, n = 14) => (v === '' || v == null) ? '_'.repeat(n) : String(v);
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const veh = id => data.vehicles.find(v => v.id === id);
+const activeIss = vid => data.issuances.find(i => i.vehicleId === vid && i.status !== 'closed');
+const ownerName = v => v && v.ownerType === 'barangay' ? `Barangay ${U(v.barangay, 12)}` : data.settings.lgu;
+const parName = () => String(data.settings.parTitle || DEFAULTS.parTitle).toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+const ownerProse = v => v && v.ownerType === 'barangay' ? ownerName(v) : (/^the /i.test(data.settings.lgu) ? data.settings.lgu : 'the ' + data.settings.lgu);
+const vehLabel = v => v ? ([v.yearModel, v.make, v.model].filter(Boolean).join(' ') || v.type || 'Vehicle') : 'Vehicle removed from registry';
+const plateChip = v => v && v.plateNo ? `<span class="plate">${esc(v.plateNo)}</span>` : `<span class="plate none">No plate</span>`;
+const byDateDesc = (k) => (a, b) => String(b.date || '').localeCompare(String(a.date || '')) || String(b[k] || '').localeCompare(String(a[k] || ''));
+const nextNo = (prefix, list, key, date) => {
+  const y = (date || today()).slice(0, 4);
+  const used = list.filter(r => String(r[key] || '').startsWith(`${prefix}-${y}-`)).map(r => parseInt(String(r[key]).split('-').pop(), 10) || 0);
+  return `${prefix}-${y}-${String(Math.max(0, ...used) + 1).padStart(4, '0')}`;
+};
+
+const UNIQUE_VEHICLE_FIELDS = [
+  ['plateNo', 'Plate No.'], ['engineNo', 'Engine No.'], ['chassisNo', 'Chassis No.'],
+  ['mvFileNo', 'MV File No.'], ['crNo', 'CR No.'], ['propertyNo', 'Property No.']
+];
+const idKey = v => String(v || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+const exactKey = v => String(v || '').trim().toUpperCase();
+function vehicleDuplicateConflicts(rec, ignoreId = null, list = data.vehicles) {
+  const out = [];
+  for (const [key, label] of UNIQUE_VEHICLE_FIELDS) {
+    const val = idKey(rec[key]);
+    if (!val) continue;
+    const hit = list.find(v => v.id !== ignoreId && idKey(v[key]) === val);
+    if (hit) out.push({ key, label, value: rec[key], hit });
+  }
+  return out;
+}
+function docDuplicate(list, key, value, ignoreId = null) {
+  const k = idKey(value);
+  return !!k && list.some(r => r.id !== ignoreId && idKey(r[key]) === k);
+}
+function duplicateGroups(list, key, label, formatter = r => r[key]) {
+  const m = new Map();
+  for (const r of list) {
+    const k = key === 'vehicleId' ? String(r[key] || '') : idKey(r[key]);
+    if (!k) continue;
+    if (!m.has(k)) m.set(k, []);
+    m.get(k).push(r);
+  }
+  return [...m.values()].filter(g => g.length > 1).map(g => ({ label, value: formatter(g[0]), records: g }));
+}
+function auditDuplicates() {
+  const groups = [];
+  for (const [key, label] of UNIQUE_VEHICLE_FIELDS) groups.push(...duplicateGroups(data.vehicles, key, label));
+  groups.push(...duplicateGroups(data.issuances, 'parNo', 'PAR No.'));
+  groups.push(...duplicateGroups(data.trips, 'ticketNo', 'Trip Ticket No.'));
+  groups.push(...duplicateGroups(data.turnovers, 'docNo', 'Turnover Report No.'));
+  const active = data.issuances.filter(i => i.status !== 'closed');
+  groups.push(...duplicateGroups(active, 'vehicleId', 'Multiple active issuances', r => { const v = veh(r.vehicleId); return v ? `${v.plateNo || 'No plate'} · ${vehLabel(v)}` : r.vehicleId; }));
+  return groups;
+}
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 4200);
+}
+
+/* ---------- storage ---------- */
+function loadLocal() {
+  try {
+    const j = JSON.parse(localStorage.getItem(LS) || 'null');
+    if (j) { for (const k of ['vehicles', 'issuances', 'trips', 'turnovers']) if (Array.isArray(j[k])) data[k] = j[k]; data.settings = { ...DEFAULTS, ...(j.settings || {}) }; }
+  } catch (e) { /* storage unavailable: keep records in memory */ }
+}
+function saveLocal() { try { localStorage.setItem(LS, JSON.stringify(data)); } catch (e) { /* in-memory only */ } }
+function upsertLocal(col, rec) { const i = data[col].findIndex(r => r.id === rec.id); if (i >= 0) data[col][i] = rec; else data[col] = [...data[col], rec]; }
+async function put(col, rec) {
+  const id = rec.id || newId();
+  const body = { ...rec, updatedAt: new Date().toISOString() }; delete body.id;
+  if (db) await db.collection(col).doc(id).set(body);
+  upsertLocal(col, { ...body, id });
+  if (!db) saveLocal();
+  return id;
+}
+async function del(col, id) {
+  if (db) await db.collection(col).doc(id).delete();
+  data[col] = data[col].filter(r => r.id !== id);
+  if (!db) saveLocal();
+}
+async function putSettings(s) {
+  if (db) await db.doc('config/settings').set(s);
+  data.settings = { ...DEFAULTS, ...s };
+  if (!db) saveLocal();
+}
+function writeFailed(e) {
+  const code = e && e.code;
+  if (code === 'invalid_argument' || code === 'not_granted' || code === 'revoked') { ui.canWrite = false; return 'This record was not saved. Your access to this page is view-only.'; }
+  if (code === 'quota_exceeded') return 'This record was not saved. The record store is full. Delete old trip tickets, then try again.';
+  return 'This record was not saved. Check your connection, then try again.';
+}
+
+async function boot() {
+  try { const h = (location.hash || '').slice(1); if (TABS.some(t => t[0] === h)) ui.tab = h; } catch (e) { /* no hash */ }
+  render();
+  const c = window.claude;
+  if (!c || typeof c.use !== 'function') { loadLocal(); ui.ready = true; render(); return; }
+  const safe = n => Promise.resolve().then(() => c.use(n)).catch(() => null);
+  const [d, dl, user] = await Promise.all([safe('db'), safe('downloads'), safe('user')]);
+  downloads = dl;
+  if (!d) { loadLocal(); ui.ready = true; render(); return; }
+  db = d; ui.shared = true;
+  try { if (user && (await user.can('data.write')) === false) ui.canWrite = false; } catch (e) { /* unknown: keep inputs */ }
+  const loaded = new Set();
+  setTimeout(() => { if (!ui.ready) { ui.ready = true; ui.storeError = loaded.size < 5; onData(); } }, 12000);
+  const mark = n => { loaded.add(n); if (loaded.size >= 5) ui.ready = true; onData(); };
+  const sub = (name, q) => q.onSnapshot(
+    s => { data[name] = s.docs.map(x => ({ ...x.data(), id: x.id })); mark(name); },
+    () => { ui.storeError = true; mark(name); });
+  sub('vehicles', db.collection('vehicles'));
+  sub('issuances', db.collection('issuances'));
+  sub('turnovers', db.collection('turnovers'));
+  sub('trips', db.collection('trips').orderBy('date', 'desc').limit(500));
+  db.doc('config/settings').onSnapshot(
+    s => { data.settings = { ...DEFAULTS, ...(s.exists ? s.data() : {}) }; mark('settings'); },
+    () => { ui.storeError = true; mark('settings'); });
+}
+function onData() { if (!ui.editing) render(); }
+
+/* ---------- document builders (pdfmake definitions; the preview renders the same tree) ---------- */
+const T = (text, o) => ({ text: (text === '' || text == null) ? NB : text, ...o });
+const nob = [false, false, false, false], bot = [false, false, false, true];
+function pageDims(landscape) {
+  const p = data.settings.paper;
+  const d = p === 'Legal' ? [612, 936] : p === 'Letter' ? [612, 792] : [595.28, 841.89];
+  return landscape ? { width: d[1], height: d[0] } : { width: d[0], height: d[1] };
+}
+function wrapDoc(content, title, landscape) {
+  return {
+    info: { title }, pageSize: pageDims(landscape), pageMargins: [42, 40, 42, 46],
+    defaultStyle: { fontSize: 10, lineHeight: 1.15 }, content,
+    footer: (p, n) => ({ text: `${title}   |   Page ${p} of ${n}`, alignment: 'right', fontSize: 7.5, color: '#555555', margin: [42, 16, 42, 0] })
+  };
+}
+function letterhead(v) {
+  const s = data.settings;
+  const lines = [T(s.header1, { alignment: 'center' }), T(s.header2, { alignment: 'center' })];
+  if (v && v.ownerType === 'barangay') {
+    lines.push(T(`Barangay ${U(v.barangay, 12)}${v.district ? `, ${v.district} District` : ''}`, { alignment: 'center', bold: true }));
+    lines.push(T('Office of the Punong Barangay', { alignment: 'center' }));
+  } else lines.push(T(s.office, { alignment: 'center', bold: true }));
+  return { stack: lines, margin: [0, 0, 0, 10] };
+}
+function sig(name, caption, sub, top = 26) {
+  const out = [T(name ? String(name).toUpperCase() : NB, { bold: true, alignment: 'center', margin: [0, top, 0, 0] }),
+    { table: { widths: ['*'], body: [[T(caption, { alignment: 'center', fontSize: 8, border: [false, true, false, false] })]] } }];
+  if (sub != null) out.push(T(sub || NB, { alignment: 'center', fontSize: 9 }));
+  return { stack: out };
+}
+function vehDesc(v) {
+  const rows = [['Type', v.type], ['Make and model', [v.make, v.model].filter(Boolean).join(' ')], ['Year model', v.yearModel], ['Color', v.color],
+    ['Plate No.', v.plateNo], ['Engine No.', v.engineNo], ['Chassis No.', v.chassisNo], ['MV File No.', v.mvFileNo], ['CR No.', v.crNo]];
+  return { stack: rows.map(([k, val]) => T([{ text: k + ': ' }, { text: U(val, 16), bold: !!val }])) };
+}
+function terms(i, v) {
+  const s = data.settings, city = v.ownerType !== 'barangay';
+  const owner = ownerProse(v);
+  const brgy = `Barangay ${U(i.barangay || v.barangay, 12)}`;
+  const office = city ? `the ${s.office}` : `the Sangguniang Barangay of ${brgy}`;
+  const list = [
+    ['Ownership.', `The vehicle described in this receipt is government property owned by ${owner}. This receipt places the vehicle in my custody and under my accountability only. It does not transfer ownership to me or to any other person, and it gives me no right to sell, donate, pledge, mortgage, lease, or otherwise dispose of the vehicle. The Certificate of Registration stays in the name of ${owner}.`],
+    ['Official use only.', `I will use the vehicle, and allow it to be used, only for the official business of ${brgy}. It will not be used for personal or family errands, for private business, or for any partisan political or election campaign activity.`],
+    ['Trip ticket.', `No trip will be made without a Driver's Trip Ticket approved before departure. I will keep the trip tickets and the record of fuel consumption on file and submit them when required for audit.`],
+    ['Authorized driver.', `Only a driver designated in writing, who holds a valid driver's license for this class of vehicle, may operate it.`],
+    ['Plates and markings.', `The vehicle will carry its government plates and the marking "For Official Use Only" with the name of the owner at all times. I will not remove, cover, or alter them.`],
+    ['Garage.', `When not in official use the vehicle will be kept at ${i.garage || 'the barangay hall or another government garage designated in writing'}. It will not be kept at a private residence unless authorized in writing.`],
+    ['Care and maintenance.', `I will exercise the diligence required of a person entrusted with government property: keep the vehicle clean and serviceable, follow its maintenance schedule, and report defects promptly. I will not alter the vehicle or remove any part or accessory without written approval. I will see that its registration and insurance are kept current, in coordination with ${office}.`],
+    ['Liability.', `I am liable for the money value of the vehicle if it is used illegally, improperly, or without authority by me or by any person for whose acts I am responsible, and for any loss, damage, or deterioration caused by negligence in its keeping or use.`],
+    ['Loss or accident.', `If the vehicle is lost, stolen, damaged, or involved in an accident, I will report it at once to the police and to ${office}, and give written notice to the ${s.auditor} within thirty (30) days.`],
+    ['No transfer.', `I will not lend, reassign, or turn over the vehicle to another person, office, or barangay without the written approval of ${office} and a new acknowledgment receipt signed by the person receiving it.`],
+    ['Inspection and inventory.', `I will present the vehicle and its papers for inspection or physical inventory whenever ${office} or the Commission on Audit requires.`],
+    ['Return.', `I will return the vehicle to ${office}, or turn it over to my successor through that office, in good condition except for ordinary wear and tear: (a) when my term or service ends for any reason; (b) when I am suspended or removed from office; or (c) upon written demand. No clearance from property accountability will be issued to me until the vehicle has been returned and accepted.`],
+    ['Violations.', `A violation of this undertaking may make me administratively, civilly, and criminally liable under the Local Government Code (R.A. No. 7160), the Government Auditing Code (P.D. No. 1445), R.A. No. 6713, R.A. No. 3019, the Revised Penal Code, and other applicable laws and audit rules.`]
+  ];
+  const extra = String(s.extraTerms || '').split(/\n+/).map(x => x.trim()).filter(Boolean).map(x => ['', x]);
+  return [...list, ...extra];
+}
+function parDoc(i) {
+  const s = data.settings, v = veh(i.vehicleId) || {}, owner = ownerName(v);
+  const brgy = i.barangay || v.barangay;
+  const brgyTxt = `Barangay ${U(brgy, 12)}`;
+  const th = t => T(t, { bold: true, alignment: 'center', fontSize: 9 });
+  const custody = [
+    T([{ text: 'Assigned for the official use of: ', bold: true }, `${brgyTxt}${v.district ? `, ${v.district} District` : ''}, ${s.place}`]),
+    T([{ text: 'Odometer reading on issuance: ', bold: true }, `${U(i.odometer, 10)} km`, { text: '     Garage: ', bold: true }, U(i.garage, 30)]),
+    T([{ text: 'Designated driver/s: ', bold: true }, U(i.drivers, 46)]),
+    T([{ text: 'Tools and accessories turned over: ', bold: true }, U(i.accessories, 40)]),
+    ...(i.remarks ? [T([{ text: 'Remarks: ', bold: true }, i.remarks])] : []),
+    T(`Ownership of this vehicle remains with ${ownerProse(v)}. This receipt transfers custody and accountability only.`, { italics: true, margin: [0, 4, 0, 0] })
+  ];
+  const sigCell = (lead, name, pos, off) => ({ stack: [T(lead, { fontSize: 9 }), sig(name, 'Signature over Printed Name'), T(pos, { alignment: 'center', fontSize: 9 }), T(off, { alignment: 'center', fontSize: 9 }), T('Date: ____________________', { fontSize: 9, margin: [0, 8, 0, 2] })] });
+  const page1 = [
+    letterhead(v),
+    T(s.parTitle || DEFAULTS.parTitle, { bold: true, fontSize: 13, alignment: 'center' }),
+    T('Motor Vehicle', { alignment: 'center', margin: [0, 0, 0, 10] }),
+    { columns: [T(['Owner: ', { text: owner, bold: true }]), T(['PAR No.: ', { text: U(i.parNo), bold: true }], { width: 190, alignment: 'right' })] },
+    { columns: [T(['Fund: ', U(v.fundSource, 20)]), T(['Date: ', U(fmtDate(i.date), 18)], { width: 190, alignment: 'right' })], margin: [0, 2, 0, 8] },
+    { table: { headerRows: 1, widths: [30, 32, '*', 80, 70, 84], body: [
+      [th('Qty'), th('Unit'), th('Description'), th('Property No.'), th('Date Acquired'), th('Amount')],
+      [T('1', { alignment: 'center' }), T('unit', { alignment: 'center' }), vehDesc(v), T(v.propertyNo, { alignment: 'center' }), T(fmtDate(v.acquisitionDate), { alignment: 'center', fontSize: 9 }), T(fmtMoney(v.acquisitionCost), { alignment: 'right', fontSize: 9 })],
+      [{ colSpan: 6, stack: custody, margin: [0, 3, 0, 3] }, {}, {}, {}, {}, {}]
+    ] } },
+    { table: { widths: ['*', '*'], body: [[
+      sigCell('Received by:', i.officialName, i.position || 'Position', brgyTxt),
+      sigCell('Issued by:', i.issuedByName, i.issuedByPosition || 'Position', v.ownerType === 'barangay' ? brgyTxt : s.office)
+    ]] }, margin: [0, 0, 0, 8] },
+    T('The undertaking on the next page forms part of this receipt.', { fontSize: 8.5, italics: true }),
+    T(s.legalBasis, { fontSize: 8, color: '#444444', margin: [0, 4, 0, 0] })
+  ];
+  const tl = terms(i, v);
+  const page2 = [
+    T('UNDERTAKING OF THE ACCOUNTABLE OFFICIAL', { bold: true, fontSize: 12, alignment: 'center', pageBreak: 'before' }),
+    T(['PAR No. ', { text: U(i.parNo), bold: true }, '   |   Plate No. ', { text: U(v.plateNo, 10), bold: true }], { alignment: 'center', margin: [0, 2, 0, 10] }),
+    T(['I, ', { text: U(i.officialName && String(i.officialName).toUpperCase(), 30), bold: true }, `, ${U(i.position, 18)} of ${brgyTxt}, ${s.place}, acknowledge that I received the motor vehicle described in the ${parName()} identified above, and I undertake the following:`], { alignment: 'justify', margin: [0, 0, 0, 6] }),
+    { ol: tl.map(([h, b]) => T(h ? [{ text: h + ' ', bold: true }, b] : b, { alignment: 'justify', margin: [0, 0, 0, 3] })), fontSize: 9.2 },
+    { unbreakable: true, stack: [
+      T(`Signed on ${U(fmtDate(i.date), 20)} at ${s.place}.`, { margin: [0, 6, 0, 0] }),
+      { columns: [
+        { stack: [T('Accountable official:', { fontSize: 9, margin: [0, 8, 0, 0] }), sig(i.officialName, 'Signature over Printed Name', i.position || 'Position', 18)] },
+        { stack: [T('Noted by:', { fontSize: 9, margin: [0, 8, 0, 0] }), sig(i.notedName, 'Signature over Printed Name', i.notedPosition, 18)] }
+      ], columnGap: 40 },
+      T('Signed in the presence of:', { margin: [0, 8, 0, 0], fontSize: 9 }),
+      { columns: [sig(i.witness1, 'Witness', null, 18), sig(i.witness2, 'Witness', null, 18)], columnGap: 40 }
+    ] }
+  ];
+  return wrapDoc([...page1, ...page2], `${parName()} ${i.parNo || '(blank form)'}`);
+}
+function tripDoc(t) {
+  const v = veh(t.vehicleId) || {};
+  const kv = (label, val, indent) => [T(label, { border: nob, fontSize: 9.5, margin: [indent ? 14 : 0, 0, 0, 0] }), T(val, { border: bot, fontSize: 9.5 })];
+  const num = x => (x === '' || x == null || isNaN(Number(x))) ? null : Number(x);
+  const f = { bal: num(t.fuelBalance), iss: num(t.fuelIssued), pur: num(t.fuelPurchased), used: num(t.fuelUsed) };
+  const total = [f.bal, f.iss, f.pur].some(x => x != null) ? (f.bal || 0) + (f.iss || 0) + (f.pur || 0) : null;
+  const end = total != null && f.used != null ? total - f.used : null;
+  const L = x => x == null ? '' : `${fmtNum(x)} liters`;
+  const o1 = num(t.odoStart), o2 = num(t.odoEnd);
+  const dist = num(t.distance) != null ? num(t.distance) : (o1 != null && o2 != null ? o2 - o1 : null);
+  const km = x => x == null ? '' : `${fmtNum(x)} km`;
+  const secHead = (a, b) => T([{ text: a + ' ', bold: true }, { text: b }], { margin: [0, 6, 0, 2] });
+  const vdesc = t.vehicleId ? [vehLabel(v), v.type].filter(Boolean).join(', ') : '';
+  return wrapDoc([
+    letterhead(v),
+    T("DRIVER'S TRIP TICKET", { bold: true, fontSize: 13, alignment: 'center', margin: [0, 0, 0, 8] }),
+    { columns: [T(['Trip Ticket No.: ', { text: U(t.ticketNo), bold: true }]), T(['Date: ', { text: U(fmtDate(t.date), 18), bold: true }], { width: 200, alignment: 'right' })] },
+    secHead('A.', 'To be filled out by the administrative official authorizing the official travel:'),
+    { table: { widths: [215, '*'], body: [
+      kv('1. Name of driver of the vehicle', t.driver),
+      kv('2. Government vehicle to be used', vdesc),
+      kv('Plate No.', v.plateNo, true),
+      kv('3. Name/s of authorized passenger/s', t.passengers),
+      kv('4. Place/s to be visited or inspected', t.destination),
+      kv('5. Purpose', t.purpose)
+    ] } },
+    { columns: [{ width: '*', text: NB }, { width: 250, stack: [sig(t.authName, 'Head of Office or Authorized Representative', t.authPosition, 16)] }] },
+    secHead('B.', 'To be filled out by the driver:'),
+    { table: { widths: [300, '*'], body: [
+      kv('1. Time of departure from office or garage', fmtTime(t.depOffice)),
+      kv('2. Time of arrival at the place in A.4', fmtTime(t.arrDest)),
+      kv('3. Time of departure from the place in A.4', fmtTime(t.depDest)),
+      kv('4. Time of arrival back at office or garage', fmtTime(t.arrOffice)),
+      kv('5. Approximate distance travelled (to and from)', km(dist)),
+      [T('6. Fuel issued, purchased and consumed:', { border: nob, colSpan: 2, fontSize: 9.5 }), {}],
+      kv('a. Balance in tank', L(f.bal), true),
+      kv('b. Issued by the office from stock', L(f.iss), true),
+      kv('c. Add: purchased during the trip', L(f.pur), true),
+      kv('TOTAL', L(total), true),
+      kv('d. Deduct: used during the trip (to and from)', L(f.used), true),
+      kv('e. Balance in tank at the end of the trip', L(end), true),
+      kv('7. Gear oil issued', t.gearOil ? `${t.gearOil} liters` : ''),
+      kv('8. Lubricating oil issued', t.lubeOil ? `${t.lubeOil} liters` : ''),
+      kv('9. Grease issued', t.grease ? `${t.grease} kg` : ''),
+      [T('10. Odometer readings:', { border: nob, colSpan: 2, fontSize: 9.5 }), {}],
+      kv('At the beginning of the trip', km(o1), true),
+      kv('At the end of the trip', km(o2), true),
+      kv('Distance travelled', km(o1 != null && o2 != null ? o2 - o1 : null), true),
+      kv('11. Remarks', t.remarks)
+    ] } },
+    { unbreakable: true, columns: [
+      { stack: [T('I certify to the correctness of the above statement of record of travel.', { fontSize: 9, margin: [0, 8, 0, 0] }), sig(t.driver, 'Driver', null, 16)] },
+      { stack: [T('I certify that I used this vehicle on official business as stated above.', { fontSize: 9, margin: [0, 8, 0, 0] }), sig('', 'Signature over Printed Name of Passenger/s', null, 16)] }
+    ], columnGap: 30 }
+  ], `Trip Ticket ${t.ticketNo || '(blank form)'}`);
+}
+function turnDoc(r) {
+  const s = data.settings, v = veh(r.vehicleId) || {}, owner = ownerName(v);
+  const k = t => T(t, { fontSize: 9, bold: true });
+  const typeLabel = (TURN_TYPES.find(x => x[0] === r.type) || [])[1];
+  const th = t => T(t, { bold: true, fontSize: 9, alignment: 'center' });
+  const checks = (r.checks && r.checks.length ? r.checks : CHECK_ITEMS.map(item => ({ item, status: '', note: '' })));
+  const person = (lead, name, pos, off) => ({ stack: [T(lead, { fontSize: 9 }), sig(name, 'Signature over Printed Name', null, 24), T(pos, { alignment: 'center', fontSize: 9 }), T(off, { alignment: 'center', fontSize: 9 })] });
+  return wrapDoc([
+    letterhead(v),
+    T('VEHICLE TURNOVER AND RETURN REPORT', { bold: true, fontSize: 13, alignment: 'center', margin: [0, 0, 0, 8] }),
+    { columns: [T(['Report No.: ', { text: U(r.docNo), bold: true }]), T(['Date: ', { text: U(fmtDate(r.date), 18), bold: true }], { width: 200, alignment: 'right' })], margin: [0, 0, 0, 6] },
+    { table: { widths: [92, '*', 92, '*'], body: [
+      [k('Vehicle'), T(r.vehicleId ? [vehLabel(v), v.type, v.color].filter(Boolean).join(', ') : ''), k('Plate No.'), T(v.plateNo, { bold: true })],
+      [k('Engine No.'), T(v.engineNo), k('Chassis No.'), T(v.chassisNo)],
+      [k('Property No.'), T(v.propertyNo), k('Owner'), T(r.vehicleId ? owner : '')],
+      [k('Transaction'), T(typeLabel), k('Reason'), T(r.reason)],
+      [k('PAR No. closed'), T(r.parNo), k('Condition'), T(r.condition)],
+      [k('Odometer'), T(r.odometer ? `${r.odometer} km` : ''), k('Fuel level'), T(r.fuelLevel)]
+    ] } },
+    T('Inspection checklist', { bold: true, margin: [0, 10, 0, 3] }),
+    { table: { headerRows: 1, widths: ['*', 86, '*'], body: [
+      [th('Item'), th('Status'), th('Notes and defects')],
+      ...checks.map(c => [T(c.item, { fontSize: 9 }), T(c.status, { fontSize: 9, alignment: 'center' }), T(c.note, { fontSize: 9 })])
+    ] } },
+    T([{ text: 'Remarks: ', bold: true }, U(r.remarks, 70)], { margin: [0, 8, 0, 0] }),
+    T(`The vehicle described above, with its keys, plates, papers and the items listed, was turned over and received in the condition stated. This report closes the accountability of the outgoing official for this vehicle as of the date above, without prejudice to liability for any loss, damage, or shortage found on inspection or audit. Ownership of the vehicle remains with ${ownerProse(v)}.`, { alignment: 'justify', fontSize: 9.5, margin: [0, 8, 0, 0] }),
+    { columns: [
+      person('Turned over by:', r.fromName, r.fromPosition, r.fromOffice),
+      person('Received by:', r.toName, r.toPosition, r.toOffice),
+      person('Inspected by:', r.inspName, r.inspPosition, r.inspName || r.inspPosition ? s.office : '')
+    ], columnGap: 16, margin: [0, 8, 0, 0] },
+    T(s.legalBasis, { fontSize: 8, color: '#444444', margin: [0, 12, 0, 0] })
+  ], `Turnover Report ${r.docNo || '(blank form)'}`);
+}
+function inventoryDoc() {
+  const s = data.settings;
+  const th = t => T(t, { bold: true, fontSize: 8, alignment: 'center' });
+  const c = (t, o) => T(t, { fontSize: 8, ...o });
+  const rows = sortedVehicles().map((v, n) => { const i = activeIss(v.id); return [
+    c(String(n + 1), { alignment: 'center' }), c(v.plateNo, { bold: true }), c([vehLabel(v), v.type, v.color].filter(Boolean).join(', ')),
+    c([v.engineNo, v.chassisNo].filter(Boolean).join(' / ')), c(v.propertyNo), c(ownerName(v)), c([v.barangay, v.district].filter(Boolean).join(', ')),
+    c(i ? `${i.officialName || ''}${i.position ? ', ' + i.position : ''}` : 'Not issued'), c(i ? `${i.parNo || ''}\n${fmtDate(i.date)}` : ''), c(v.condition || '')
+  ]; });
+  return wrapDoc([
+    letterhead(),
+    T('INVENTORY OF MOTOR VEHICLES ISSUED TO BARANGAYS', { bold: true, fontSize: 12, alignment: 'center' }),
+    T(`As of ${fmtDate(today())}`, { alignment: 'center', margin: [0, 0, 0, 8] }),
+    { table: { headerRows: 1, widths: [18, 48, '*', 90, 56, 76, 70, 96, 62, 52], body: [
+      [th('No.'), th('Plate No.'), th('Vehicle'), th('Engine / Chassis No.'), th('Property No.'), th('Owner'), th('Barangay'), th('Accountable official'), th('PAR No. and date'), th('Condition')],
+      ...rows
+    ] } },
+    { columns: [{ stack: [T('Prepared by:', { fontSize: 9, margin: [0, 14, 0, 0] }), sig('', 'Signature over Printed Name', null, 20)] }, { width: '*', text: NB }, { stack: [T('Certified correct:', { fontSize: 9, margin: [0, 14, 0, 0] }), sig(s.gsoName, 'Signature over Printed Name', s.gsoPosition, 20)] }], columnGap: 20 }
+  ], 'Inventory of Motor Vehicles', true);
+}
+const BUILD = { receipts: parDoc, trips: tripDoc, turnover: turnDoc };
+const FILEKEY = { receipts: 'parNo', trips: 'ticketNo', turnover: 'docNo' };
+const BLANKNAME = { receipts: 'Blank-PAR-and-Undertaking', trips: 'Blank-Trip-Ticket', turnover: 'Blank-Turnover-Report' };
+const fileSafe = s => String(s || 'document').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'document';
+
+/* ---------- preview: render the pdfmake tree as HTML ---------- */
+function mg(m) { if (m == null) return ''; if (typeof m === 'number') return `margin:${m}pt;`; if (m.length === 2) return `margin:${m[1]}pt ${m[0]}pt;`; return `margin:${m[1]}pt ${m[2]}pt ${m[3]}pt ${m[0]}pt;`; }
+function styleOf(n) {
+  let s = '';
+  if (n.bold) s += 'font-weight:700;'; if (n.italics) s += 'font-style:italic;';
+  if (n.fontSize) s += `font-size:${n.fontSize}pt;`; if (n.alignment) s += `text-align:${n.alignment};`;
+  if (n.color) s += `color:${n.color};`;
+  if (n.unbreakable) s += 'break-inside:avoid;';
+  return s + mg(n.margin);
+}
+function inline(t) {
+  if (Array.isArray(t)) return t.map(inline).join('');
+  if (t && typeof t === 'object') return `<span style="${styleOf(t)}">${inline(t.text)}</span>`;
+  return esc(t).replace(/\n/g, '<br>');
+}
+function colW(w) { return typeof w === 'number' ? `flex:0 0 ${w}pt;` : w === 'auto' ? 'flex:0 0 auto;' : 'flex:1 1 0;'; }
+function nodeHtml(n) {
+  if (n == null) return '';
+  if (typeof n === 'string' || typeof n === 'number') return `<div>${esc(n)}</div>`;
+  if (Array.isArray(n)) return n.map(nodeHtml).join('');
+  const st = styleOf(n);
+  if ('text' in n) return `<div style="${st}">${inline(n.text)}</div>`;
+  if (n.stack) return `<div style="${st}">${n.stack.map(nodeHtml).join('')}</div>`;
+  if (n.columns) return `<div style="display:flex;gap:${n.columnGap ?? 10}pt;${st}">${n.columns.map(c => `<div style="min-width:0;${colW(c.width)}">${nodeHtml(c)}</div>`).join('')}</div>`;
+  if (n.ol) return `<ol style="${st}">${n.ol.map(li => `<li>${nodeHtml(li)}</li>`).join('')}</ol>`;
+  if (n.table) {
+    const cols = n.table.widths.map(w => `<col${typeof w === 'number' ? ` style="width:${w + 8}pt"` : ''}>`).join('');
+    const body = n.table.body.map(row => {
+      let skip = 0, out = '';
+      for (const cell of row) {
+        if (skip > 0) { skip--; continue; }
+        const c = (cell && typeof cell === 'object' && !Array.isArray(cell)) ? cell : { text: cell };
+        let cs = '';
+        if (c.border) ['left', 'top', 'right', 'bottom'].forEach((side, ix) => { if (!c.border[ix]) cs += `border-${side}:0;`; });
+        if (c.colSpan > 1) skip = c.colSpan - 1;
+        out += `<td${c.colSpan > 1 ? ` colspan="${c.colSpan}"` : ''} style="${cs}">${nodeHtml(c)}</td>`;
+      }
+      return `<tr>${out}</tr>`;
+    }).join('');
+    return `<table class="dt" style="${st}"><colgroup>${cols}</colgroup><tbody>${body}</tbody></table>`;
+  }
+  return '';
+}
+function splitPages(dd) {
+  const pages = [[]];
+  for (const n of dd.content) { if (n && n.pageBreak === 'before') pages.push([]); pages[pages.length - 1].push(n); }
+  return pages;
+}
+function previewHtml(dd) {
+  const { width, height } = dd.pageSize, [ml, mt, mr, mb] = dd.pageMargins;
+  return `<div class="paper-wrap" data-w="${width}">${splitPages(dd).map(p => `<div class="sheet" style="width:${width}pt;min-height:${height}pt;padding:${mt}pt ${mr}pt ${mb}pt ${ml}pt">${p.map(nodeHtml).join('')}</div>`).join('')}</div>`;
+}
+/* Printing works only when the page is opened as its own file in a browser. Inside the Claude viewer the print dialog is blocked, so the PDF is the print path there. */
+const CAN_PRINT = !window.claude;
+function printDoc(dd) {
+  const { width, height } = dd.pageSize, [ml, mt, mr, mb] = dd.pageMargins;
+  let st = document.getElementById('print-page');
+  if (!st) { st = document.createElement('style'); st.id = 'print-page'; document.head.appendChild(st); }
+  st.textContent = `@page { size: ${width}pt ${height}pt; margin: ${mt}pt ${mr}pt ${mb}pt ${ml}pt; }`;
+  document.getElementById('print-root').innerHTML = splitPages(dd).map(p => `<div class="sheet">${p.map(nodeHtml).join('')}</div>`).join('');
+  window.print();
+}
+function fitSheets() {
+  document.querySelectorAll('.paper-wrap').forEach(w => {
+    const z = Math.min(1, (w.clientWidth - 2) / (parseFloat(w.dataset.w) * 96 / 72));
+    w.querySelectorAll('.sheet').forEach(s => { s.style.zoom = z; });
+  });
+}
+window.addEventListener('resize', fitSheets);
+
+/* ---------- PDF and CSV output ---------- */
+const PDF_SRC = ['https://cdn.jsdelivr.net/npm/pdfmake@0.2.20/build/pdfmake.min.js', 'https://cdn.jsdelivr.net/npm/pdfmake@0.2.20/build/vfs_fonts.js'];
+let pdfLib;
+function loadScript(src) { return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load')); document.head.appendChild(s); }); }
+function loadPdfLib() { return pdfLib || (pdfLib = loadScript(PDF_SRC[0]).then(() => loadScript(PDF_SRC[1])).catch(e => { pdfLib = null; throw e; })); }
+async function saveFile(filename, blob) {
+  if (downloads) { await downloads.save({ filename, data: blob }); return; }
+  if (window.claude) throw { code: 'unavailable' };
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+}
+async function offer(filename, make, btn) {
+  const label = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Preparing…'; }
+  try { await saveFile(filename, await make()); }
+  catch (e) {
+    const code = e && e.code;
+    if (code === 'declined') { /* viewer said no */ }
+    else if (code === 'rate_limited') toast('A save prompt is already open. Answer it, then try again.');
+    else if (code) toast('File download is not available in this view. Open the page in a browser to save files.');
+    else toast('The file could not be prepared. Check your internet connection, then try again.');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = label; }
+}
+const pdfBlob = dd => loadPdfLib().then(() => new Promise(res => window.pdfMake.createPdf(dd).getBlob(res)));
+const XLSX_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+let xlsxLib;
+const loadXlsx = () => xlsxLib || (xlsxLib = loadScript(XLSX_SRC).catch(e => { xlsxLib = null; throw e; }));
+const VCOLS = [['Record ID', 'id'], ['Plate No.', 'plateNo'], ['Type', 'type'], ['Make', 'make'], ['Model', 'model'], ['Year model', 'yearModel'], ['Color', 'color'], ['Engine No.', 'engineNo'], ['Chassis No.', 'chassisNo'], ['MV File No.', 'mvFileNo'], ['CR No.', 'crNo'], ['Registered owner', 'ownerType'], ['Barangay', 'barangay'], ['District', 'district'], ['Property No.', 'propertyNo'], ['Date acquired', 'acquisitionDate'], ['Acquisition cost', 'acquisitionCost'], ['Fund', 'fundSource'], ['Condition', 'condition'], ['Remarks', 'remarks']];
+const numOr = x => (x === '' || x == null || isNaN(Number(x))) ? '' : Number(x);
+async function xlsxBlob() {
+  await loadXlsx();
+  const X = window.XLSX, wb = X.utils.book_new();
+  const add = (name, head, rows) => {
+    const ws = X.utils.aoa_to_sheet([head, ...rows]);
+    ws['!cols'] = head.map((h, c) => ({ wch: Math.min(42, Math.max(String(h).length, ...rows.map(r => String(r[c] ?? '').length)) + 2) }));
+    X.utils.book_append_sheet(wb, ws, name);
+  };
+  const vp = id => { const v = veh(id); return [v ? v.plateNo || '' : '', v ? vehLabel(v) : '']; };
+  add('Vehicles', [...VCOLS.map(c => c[0]), 'Accountable official', 'Position', 'PAR No.', 'PAR date'], sortedVehicles().map(v => {
+    const i = activeIss(v.id) || {};
+    return [...VCOLS.map(([, k]) => k === 'ownerType' ? (v.ownerType === 'barangay' ? 'Barangay' : 'City') : (k === 'acquisitionCost' || k === 'yearModel') ? numOr(v[k]) : (v[k] ?? '')), i.officialName || '', i.position || '', i.parNo || '', i.date || ''];
+  }));
+  add('Issuances', ['PAR No.', 'Date issued', 'Plate No.', 'Vehicle', 'Accountable official', 'Position', 'Barangay', 'Term ends', 'Odometer on issuance (km)', 'Garage', 'Designated driver/s', 'Tools and accessories', 'Issued by', 'Issuing officer position', 'Noted by', 'Noted by position', 'Witness 1', 'Witness 2', 'Status', 'Date closed', 'Closed by report', 'Remarks'],
+    [...data.issuances].sort(byDateDesc('parNo')).map(r => [r.parNo || '', r.date || '', ...vp(r.vehicleId), r.officialName || '', r.position || '', r.barangay || '', r.termEnds || '', numOr(r.odometer), r.garage || '', r.drivers || '', r.accessories || '', r.issuedByName || '', r.issuedByPosition || '', r.notedName || '', r.notedPosition || '', r.witness1 || '', r.witness2 || '', r.status === 'closed' ? 'Closed' : 'Active', r.closedDate || '', r.closedBy || '', r.remarks || '']));
+  add('Trip tickets', ['Ticket No.', 'Date', 'Plate No.', 'Vehicle', 'Driver', 'Passenger/s', 'Destination', 'Purpose', 'Authorized by', 'Position', 'Departure from office', 'Arrival at destination', 'Departure from destination', 'Arrival back at office', 'Odometer start (km)', 'Odometer end (km)', 'Distance (km)', 'Fuel balance (L)', 'Fuel issued (L)', 'Fuel purchased (L)', 'Fuel used (L)', 'Fuel end balance (L)', 'Gear oil (L)', 'Lubricating oil (L)', 'Grease (kg)', 'Remarks'],
+    [...data.trips].sort(byDateDesc('ticketNo')).map(r => {
+      const a = numOr(r.odoStart), b = numOr(r.odoEnd), dist = numOr(r.distance) !== '' ? numOr(r.distance) : (a !== '' && b !== '' ? b - a : '');
+      const fb = numOr(r.fuelBalance), fi = numOr(r.fuelIssued), fp = numOr(r.fuelPurchased), fu = numOr(r.fuelUsed);
+      const end = fu !== '' && [fb, fi, fp].some(x => x !== '') ? (fb || 0) + (fi || 0) + (fp || 0) - fu : '';
+      return [r.ticketNo || '', r.date || '', ...vp(r.vehicleId), r.driver || '', r.passengers || '', r.destination || '', r.purpose || '', r.authName || '', r.authPosition || '', r.depOffice || '', r.arrDest || '', r.depDest || '', r.arrOffice || '', a, b, dist, fb, fi, fp, fu, end, numOr(r.gearOil), numOr(r.lubeOil), numOr(r.grease), r.remarks || ''];
+    }));
+  add('Turnovers', ['Report No.', 'Date', 'Plate No.', 'Vehicle', 'Transaction', 'Reason', 'PAR No. closed', 'Turned over by', 'Position', 'Barangay or office', 'Received by', 'Position', 'Barangay or office', 'Inspected by', 'Inspector position', 'Odometer (km)', 'Fuel level', 'Condition', 'Checklist findings', 'Remarks'],
+    [...data.turnovers].sort(byDateDesc('docNo')).map(r => [r.docNo || '', r.date || '', ...vp(r.vehicleId), (TURN_TYPES.find(x => x[0] === r.type) || [])[1] || '', r.reason || '', r.parNo || '', r.fromName || '', r.fromPosition || '', r.fromOffice || '', r.toName || '', r.toPosition || '', r.toOffice || '', r.inspName || '', r.inspPosition || '', numOr(r.odometer), r.fuelLevel || '', r.condition || '',
+      (r.checks || []).filter(c => c.status && c.status !== 'OK' && c.status !== 'Not applicable').map(c => `${c.item}: ${c.status}${c.note ? ' (' + c.note + ')' : ''}`).join('; ') || 'All items OK', r.remarks || '']));
+  const dups = auditDuplicates();
+  add('Duplicate Audit', ['Field', 'Duplicate value', 'Count', 'Record references'], dups.map(g => [g.label, g.value || '', g.records.length, g.records.map(r => r.parNo || r.ticketNo || r.docNo || r.plateNo || r.propertyNo || r.id || '').join('; ')]));
+  return new Blob([X.write(wb, { bookType: 'xlsx', type: 'array' })]);
+}
+function cellText(val) {
+  if (val instanceof Date) { const d = new Date(val.getTime() + 12 * 3600 * 1000); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+  return String(val ?? '').trim();
+}
+async function readImport(file) {
+  await loadXlsx();
+  const X = window.XLSX, wb = X.read(await file.arrayBuffer(), { cellDates: true });
+  const ws = wb.Sheets.Vehicles || wb.Sheets[wb.SheetNames[0]];
+  const rows = X.utils.sheet_to_json(ws, { defval: '' });
+  const norm = h => String(h).toLowerCase().replace(/[^a-z0-9]/g, '');
+  const map = Object.fromEntries(VCOLS.map(([h, k]) => [norm(h), k]));
+  Object.assign(map, { plate: 'plateNo', platenumber: 'plateNo', engine: 'engineNo', enginenumber: 'engineNo', chassis: 'chassisNo', chassisnumber: 'chassisNo', brand: 'make', year: 'yearModel', owner: 'ownerType', propertynumber: 'propertyNo', dateofacquisition: 'acquisitionDate', cost: 'acquisitionCost', amount: 'acquisitionCost', typeofvehicle: 'type', brgy: 'barangay', fundsource: 'fundSource' });
+  const adds = [], updates = []; let skipped = 0;
+  for (const row of rows) {
+    const o = {};
+    for (const [h, val] of Object.entries(row)) { const k = map[norm(h)]; if (k) o[k] = cellText(val); }
+    for (const [k] of UNIQUE_VEHICLE_FIELDS) if (o[k]) o[k] = String(o[k]).trim().toUpperCase();
+    if (o.barangay) o.barangay = o.barangay.replace(/^(brgy\.?|barangay)\s+/i, '');
+    if (o.ownerType) o.ownerType = /barangay|brgy/i.test(o.ownerType) ? 'barangay' : 'city';
+    if (o.acquisitionDate && !/^\d{4}-\d{2}-\d{2}$/.test(o.acquisitionDate)) { const d = new Date(o.acquisitionDate); o.acquisitionDate = isNaN(d) ? '' : cellText(d); }
+    if (o.acquisitionCost) o.acquisitionCost = String(o.acquisitionCost).replace(/[^0-9.]/g, '');
+    if (!UNIQUE_VEHICLE_FIELDS.some(([k]) => o[k])) { if (Object.values(o).some(Boolean)) skipped++; continue; }
+    const pending = [...adds, ...updates];
+    if (vehicleDuplicateConflicts(o, null, pending).length) { skipped++; continue; }
+    const matches = data.vehicles.filter(v => UNIQUE_VEHICLE_FIELDS.some(([k]) => o[k] && idKey(o[k]) === idKey(v[k])));
+    const uniqueMatches = [...new Map(matches.map(v => [v.id, v])).values()];
+    if (uniqueMatches.length > 1) { skipped++; continue; }
+    const ex = uniqueMatches[0] || null;
+    delete o.id;
+    if (ex) {
+      const candidate = { ...ex, ...Object.fromEntries(Object.entries(o).filter(([, v]) => v !== '')) };
+      if (vehicleDuplicateConflicts(candidate, ex.id).length) { skipped++; continue; }
+      const ch = {}; for (const [k, v] of Object.entries(o)) if (v !== '' && String(ex[k] ?? '') !== v) ch[k] = v;
+      if (Object.keys(ch).length) updates.push({ ...ex, ...ch });
+    } else adds.push({ ownerType: 'city', condition: 'Serviceable', type: 'Other', ...Object.fromEntries(Object.entries(o).filter(([, v]) => v !== '')) });
+  }
+  return { adds, updates, skipped, name: file.name, total: rows.length };
+}
+
+/* ---------- views ---------- */
+const sortedVehicles = () => [...data.vehicles].sort((a, b) => String(a.barangay || '').localeCompare(String(b.barangay || '')) || String(a.plateNo || '').localeCompare(String(b.plateNo || '')));
+function fld(name, label, o = {}) {
+  const id = `f-${ui.tab}-${name}`;
+  const v = o.value ?? (ui.draft && ui.draft[name]) ?? '';
+  const req = o.req ? ' required' : '';
+  let ctl;
+  if (o.options) ctl = `<select id="${id}" name="${name}"${req}>${o.blank != null ? `<option value="">${esc(o.blank)}</option>` : ''}${o.options.map(x => { const [val, lab] = Array.isArray(x) ? x : [x, x]; return `<option value="${esc(val)}"${String(val) === String(v) ? ' selected' : ''}>${esc(lab)}</option>`; }).join('')}</select>`;
+  else if (o.type === 'textarea') ctl = `<textarea id="${id}" name="${name}" rows="${o.rows || 2}"${req}>${esc(v)}</textarea>`;
+  else ctl = `<input id="${id}" name="${name}" type="${o.type || 'text'}" value="${esc(v)}"${req}${o.list ? ` list="${o.list}"` : ''}${o.step ? ` step="${o.step}" min="0"` : ''}${o.ph ? ` placeholder="${esc(o.ph)}"` : ''} autocomplete="off">`;
+  return `<label class="fld${o.wide ? ' wide' : ''}" for="${id}"><span>${esc(label)}${o.req ? '<b class="req">required</b>' : ''}</span>${ctl}${o.hint ? `<small>${esc(o.hint)}</small>` : ''}</label>`;
+}
+const vehOptions = () => sortedVehicles().map(v => [v.id, `${v.plateNo || 'No plate'} · ${vehLabel(v)}${v.barangay ? ' · Brgy. ' + v.barangay : ''}`]);
+const formShell = (title, inner, saveLabel) => `<section class="panel"><div class="panel-head"><h2>${esc(title)}</h2><button class="btn quiet" type="button" data-act="cancel">Cancel</button></div>
+  <div class="panel-body"><form class="entry" data-form="${ui.tab}">${inner}<div id="form-err" class="err" role="alert" hidden></div>
+  <div class="row"><button class="btn primary" type="submit">${esc(saveLabel)}</button><button class="btn" type="button" data-act="cancel">Cancel</button></div></form></div></section>
+  <datalist id="dl-pos">${POSITIONS.map(p => `<option value="${esc(p)}">`).join('')}</datalist>`;
+
+function render() {
+  ui.editing = false;
+  const s = data.settings;
+  const counts = { registry: data.vehicles.length, receipts: data.issuances.length, trips: data.trips.length, turnover: data.turnovers.length, audit: auditDuplicates().length };
+  app.innerHTML = `
+  <header class="top">
+    <div><h1>Barangay Vehicle Accountability</h1><p class="who">${esc(s.lgu)} · ${esc(s.office)}</p></div>
+    ${ui.ready ? `<span class="store${ui.shared ? '' : ' local'}"><i></i>${ui.shared ? 'Records are saved for everyone with access to this page' : 'Records are saved in this browser only'}</span>` : ''}
+  </header>
+  <div class="tabs-scroll"><nav class="tabs" aria-label="Sections">${TABS.map(([id, label]) => `<button class="tab" data-act="tab" data-tab="${id}"${ui.tab === id ? ' aria-current="page"' : ''}>${label}${ui.ready && counts[id] != null ? `<span class="n">${counts[id]}</span>` : ''}</button>`).join('')}</nav></div>
+  ${ui.storeError ? `<p class="err">Some records could not be loaded. Reload the page to try again.</p>` : ''}
+  ${ui.ready && !ui.canWrite ? `<p class="note warn">You have view-only access. You can open and download documents, but you cannot add or change records.</p>` : ''}
+  <main id="view">${ui.ready ? view() : `<section class="panel"><div class="empty"><p class="muted">Loading records…</p></div></section>`}</main>
+  <input type="file" id="imp" accept=".xlsx,.xls,.csv" aria-label="Excel file to import" hidden>`;
+  fitSheets();
+}
+function view() {
+  if (ui.tab === 'settings') return settingsView();
+  if (ui.tab === 'audit') return auditView();
+  if (ui.mode === 'form' && ui.canWrite) { ui.editing = true; return { registry: vehicleForm, receipts: receiptForm, trips: tripForm, turnover: turnoverForm }[ui.tab](); }
+  if (ui.mode === 'doc' && ui.tab !== 'registry') { const r = data[COL[ui.tab]].find(x => x.id === ui.id); if (r) return docView(r); ui.mode = 'list'; }
+  return ui.tab === 'registry' ? importPanel() + registryList() : recordsList();
+}
+function importPanel() {
+  const p = ui.importPlan; if (!p) return '';
+  const n = p.adds.length + p.updates.length;
+  return `<section class="panel" style="margin-bottom:14px"><div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
+    <h3>Import from ${esc(p.name)}</h3>
+    <p>${p.adds.length} new ${p.adds.length === 1 ? 'vehicle' : 'vehicles'} to add. ${p.updates.length} existing ${p.updates.length === 1 ? 'vehicle' : 'vehicles'} to update. ${p.skipped ? `${p.skipped} ${p.skipped === 1 ? 'row' : 'rows'} skipped (no plate, chassis or engine number, or a duplicate in the file).` : ''}</p>
+    ${n ? `<div class="table-wrap"><table class="list"><thead><tr><th>Action</th><th>Plate</th><th>Vehicle</th><th>Barangay</th><th>Chassis No.</th></tr></thead><tbody>${[...p.adds.map(v => ['Add', v]), ...p.updates.map(v => ['Update', v])].slice(0, 12).map(([a, v]) => `<tr><td><span class="pill ${a === 'Add' ? 'ok' : 'warn'}">${a}</span></td><td>${plateChip(v)}</td><td>${esc(vehLabel(v))}</td><td>${esc(v.barangay || '')}</td><td class="num">${esc(v.chassisNo || '')}</td></tr>`).join('')}</tbody></table></div>${n > 12 ? `<p class="small muted">and ${n - 12} more.</p>` : ''}` : `<p class="muted">Nothing to import. The rows match what is already in the registry.</p>`}
+    <div class="row">${n ? `<button class="btn primary" data-act="import-yes">Import ${n} ${n === 1 ? 'vehicle' : 'vehicles'}</button>` : ''}<button class="btn" data-act="import-no">${n ? 'Cancel' : 'Close'}</button></div>
+  </div></section>`;
+}
+
+function registryRows() {
+  const q = ui.q.trim().toLowerCase();
+  const rows = sortedVehicles().filter(v => {
+    const i = activeIss(v.id);
+    if (ui.flt === 'issued' && !i) return false;
+    if (ui.flt === 'unassigned' && i) return false;
+    if (ui.flt === 'down' && (!v.condition || v.condition === 'Serviceable')) return false;
+    if (!q) return true;
+    return [v.plateNo, v.make, v.model, v.type, v.propertyNo, v.barangay, v.district, v.engineNo, v.chassisNo, i && i.officialName, i && i.parNo].some(x => String(x || '').toLowerCase().includes(q));
+  });
+  if (!rows.length) return `<tr><td colspan="6" class="muted">No vehicle matches this search.</td></tr>`;
+  return rows.map(v => {
+    const i = activeIss(v.id);
+    const cond = !v.condition || v.condition === 'Serviceable' ? '' : `<span class="pill ${v.condition === 'Unserviceable' ? 'bad' : 'warn'}">${esc(v.condition)}</span>`;
+    const acts = i
+      ? `<button class="btn quiet" data-act="start" data-tab="trips" data-id="${v.id}">Trip ticket</button><button class="btn quiet" data-act="open" data-tab="receipts" data-id="${i.id}">Receipt</button>${ui.canWrite ? `<button class="btn quiet" data-act="start" data-tab="turnover" data-id="${v.id}">Turnover</button>` : ''}`
+      : (ui.canWrite ? `<button class="btn quiet" data-act="start" data-tab="receipts" data-id="${v.id}">Issue</button>` : '');
+    return `<tr>
+      <td>${plateChip(v)}</td>
+      <td><div>${esc(vehLabel(v))}</div><div class="sub">${esc([v.type, v.color].filter(Boolean).join(' · '))}${v.propertyNo ? ` · <span class="num">${esc(v.propertyNo)}</span>` : ''}</div></td>
+      <td><div>${esc(v.barangay ? 'Brgy. ' + v.barangay : 'Not assigned')}</div><div class="sub">${esc(v.district || '')}</div></td>
+      <td><div>${esc(ownerName(v))}</div></td>
+      <td>${i ? `<span class="pill ok">Issued</span><div>${esc(i.officialName || '')}</div><div class="sub">${esc(i.position || '')} · <span class="num">${esc(i.parNo || '')}</span></div>` : `<span class="pill idle">Not issued</span>`} ${cond}</td>
+      <td class="act">${acts}${ui.canWrite ? `<button class="btn quiet" data-act="edit" data-tab="registry" data-id="${v.id}">Edit</button><button class="btn quiet danger" data-act="veh-quick-delete" data-id="${v.id}">Remove</button>` : ''}</td>
+    </tr>`;
+  }).join('');
+}
+function registryList() {
+  const vs = data.vehicles;
+  if (!vs.length) return `<section class="panel"><div class="empty">
+    <h2>No vehicles in the registry yet</h2>
+    <p class="muted">Each vehicle goes through the same four records. Start with the first.</p>
+    <ol class="steps">
+      <li><b>Add the vehicle.</b> Plate, engine and chassis numbers, property number, owner, and the barangay it serves.</li>
+      <li><b>Issue it on a receipt.</b> The official signs the property receipt and an undertaking that ownership stays with the government.</li>
+      <li><b>Write a trip ticket for every trip.</b> The form follows the standard Driver's Trip Ticket.</li>
+      <li><b>Record the turnover.</b> At the end of the term the vehicle is inspected and returned or passed to the successor, which closes the receipt.</li>
+    </ol>
+    ${ui.canWrite ? `<div class="row"><button class="btn primary" data-act="new" data-tab="registry">Add the first vehicle</button><button class="btn" data-act="import">Import from Excel</button></div><p class="small muted">To import, use a sheet with one vehicle per row and column headings such as Plate No., Type, Make, Model, Engine No., Chassis No., Barangay, District, Property No., Date acquired and Acquisition cost.</p>` : ''}
+  </div></section>`;
+  const issued = vs.filter(v => activeIss(v.id)).length;
+  const down = vs.filter(v => v.condition && v.condition !== 'Serviceable').length;
+  return `<section class="panel">
+    <div class="panel-head">
+      <div class="stats">
+        <div class="stat"><b>${vs.length}</b><span>vehicles</span></div>
+        <div class="stat"><b>${issued}</b><span>issued on receipt</span></div>
+        <div class="stat"><b>${vs.length - issued}</b><span>not issued</span></div>
+        <div class="stat"><b>${down}</b><span>not serviceable</span></div>
+      </div>
+      <div class="row">${auditDuplicates().length ? `<button class="btn danger" data-act="tab" data-tab="audit">Review ${auditDuplicates().length} duplicate group${auditDuplicates().length === 1 ? '' : 's'}</button>` : ''}${ui.canWrite ? `<button class="btn primary" data-act="new" data-tab="registry">Add vehicle</button>` : ''}<button class="btn" data-act="xlsx">Export to Excel</button>${ui.canWrite ? `<button class="btn" data-act="import">Import from Excel</button>` : ''}${CAN_PRINT ? `<button class="btn" data-act="print-inventory">Print inventory</button>` : ''}<button class="btn" data-act="inventory">Inventory PDF</button></div>
+    </div>
+    <div class="panel-body row">
+      <input id="q" class="grow" type="search" placeholder="Search plate, barangay, official, property no." value="${esc(ui.q)}" aria-label="Search vehicles">
+      <select id="flt" style="width:auto" aria-label="Filter vehicles">${[['all', 'All vehicles'], ['issued', 'Issued'], ['unassigned', 'Not issued'], ['down', 'Not serviceable']].map(([v, l]) => `<option value="${v}"${ui.flt === v ? ' selected' : ''}>${l}</option>`).join('')}</select>
+    </div>
+    <div class="table-wrap"><table class="list"><thead><tr><th>Plate</th><th>Vehicle</th><th>Assigned to</th><th>Owner</th><th>Accountability</th><th></th></tr></thead><tbody id="rows">${registryRows()}</tbody></table></div>
+  </section>`;
+}
+
+const LISTS = {
+  receipts: { title: 'Issued receipts', newLabel: 'Issue a receipt', blank: 'Blank receipt', key: 'parNo',
+    empty: 'No receipts issued yet. Issuing a receipt records which official is accountable for a vehicle and carries the signed undertaking that ownership stays with the government.',
+    head: ['PAR No.', 'Date', 'Vehicle', 'Accountable official', 'Status'],
+    row: r => { const v = veh(r.vehicleId); return [`<span class="num">${esc(r.parNo || '')}</span>`, esc(fmtDate(r.date)), `${plateChip(v)}<div class="sub">${esc(vehLabel(v))}</div>`, `<div>${esc(r.officialName || '')}</div><div class="sub">${esc([r.position, r.barangay && 'Brgy. ' + r.barangay].filter(Boolean).join(' · '))}</div>`, r.status === 'closed' ? `<span class="pill idle">Closed</span><div class="sub">${esc(fmtDate(r.closedDate))}</div>` : `<span class="pill ok">Active</span>`]; } },
+  trips: { title: "Driver's trip tickets", newLabel: 'New trip ticket', blank: 'Blank trip ticket', key: 'ticketNo',
+    empty: 'No trip tickets yet. Prepare one before each trip. Part A is filled in here. The driver completes Part B by hand, or you can encode it after the trip.',
+    head: ['Ticket No.', 'Date', 'Vehicle', 'Driver', 'Destination and purpose'],
+    row: r => { const v = veh(r.vehicleId); return [`<span class="num">${esc(r.ticketNo || '')}</span>`, esc(fmtDate(r.date)), `${plateChip(v)}<div class="sub">${esc(vehLabel(v))}</div>`, esc(r.driver || ''), `<div>${esc(r.destination || '')}</div><div class="sub">${esc(r.purpose || '')}</div>`]; } },
+  turnover: { title: 'Turnover and return reports', newLabel: 'New turnover report', blank: 'Blank turnover report', key: 'docNo',
+    empty: 'No turnover reports yet. Record one when an official leaves office or the vehicle is recalled. Saving the report closes the active receipt for that vehicle.',
+    head: ['Report No.', 'Date', 'Vehicle', 'Transaction', 'From and to'],
+    row: r => { const v = veh(r.vehicleId); return [`<span class="num">${esc(r.docNo || '')}</span>`, esc(fmtDate(r.date)), `${plateChip(v)}<div class="sub">${esc(vehLabel(v))}</div>`, `<div>${esc((TURN_TYPES.find(x => x[0] === r.type) || [])[1] || '')}</div><div class="sub">${esc(r.reason || '')}</div>`, `<div>${esc(r.fromName || '')}</div><div class="sub">to ${esc(r.toName || '')}</div>`]; } }
+};
+function recordsList() {
+  const cfg = LISTS[ui.tab], rows = [...data[COL[ui.tab]]].sort(byDateDesc(cfg.key));
+  const canAdd = ui.canWrite && data.vehicles.length > 0;
+  const head = `<div class="panel-head"><h2>${esc(cfg.title)}</h2><div class="row">${canAdd ? `<button class="btn primary" data-act="new" data-tab="${ui.tab}">${cfg.newLabel}</button>` : ''}${CAN_PRINT ? `<button class="btn" data-act="print-blank">Print ${cfg.blank.toLowerCase()}</button>` : ''}<button class="btn" data-act="blank">${cfg.blank} (PDF)</button><button class="btn" data-act="xlsx">Export to Excel</button></div></div>`;
+  if (!rows.length) return `<section class="panel">${head}<div class="empty"><p class="muted" style="max-width:65ch">${esc(cfg.empty)}</p>${data.vehicles.length ? '' : `<p class="note">Add a vehicle in the Vehicles tab first. Documents are prepared from the registry.</p>`}</div></section>`;
+  return `<section class="panel">${head}<div class="table-wrap"><table class="list"><thead><tr>${cfg.head.map(h => `<th>${h}</th>`).join('')}<th></th></tr></thead><tbody>${rows.map(r => `<tr>${cfg.row(r).map(c => `<td>${c}</td>`).join('')}<td class="act"><button class="btn quiet" data-act="open" data-tab="${ui.tab}" data-id="${r.id}">Open</button>${ui.canWrite ? `<button class="btn quiet" data-act="edit" data-tab="${ui.tab}" data-id="${r.id}">Edit</button><button class="btn quiet danger" data-act="quick-delete" data-tab="${ui.tab}" data-id="${r.id}">Delete</button>` : ''}</td></tr>`).join('')}</tbody></table></div>${ui.tab === 'trips' && rows.length >= 500 ? `<div class="panel-body small muted">Showing the latest 500 trip tickets.</div>` : ''}</section>`;
+}
+
+function docView(r) {
+  const tab = ui.tab, dd = BUILD[tab](r), v = veh(r.vehicleId);
+  let extra = '';
+  if (tab === 'receipts' && r.status === 'closed') extra = `<p class="note">This receipt was closed on ${esc(fmtDate(r.closedDate))}${r.closedBy ? ` by turnover report ${esc(r.closedBy)}` : ''}.</p>`;
+  if (tab === 'receipts' && r.status !== 'closed') extra = `<p class="note">Print two copies. The official signs both pages. Keep one copy in the property file and give one to the official.</p>`;
+  if (tab === 'turnover' && r.type !== 'return' && v && !activeIss(v.id) && ui.canWrite) extra = `<div class="note row between"><span>${esc(v.plateNo || 'This vehicle')} has no active receipt. Issue a new one to ${esc(r.toName || 'the receiving official')} so accountability does not lapse.</span><button class="btn primary" data-act="receipt-from-turnover" data-id="${r.id}">Prepare receipt</button></div>`;
+  const confirm = ui.confirm === r.id
+    ? `<div class="err row between"><span>Delete this record? This cannot be undone.${tab === 'turnover' ? ' The receipt it closed will be reopened.' : ''}</span><span class="row"><button class="btn danger" data-act="delete-yes" data-id="${r.id}">Delete</button><button class="btn" data-act="delete-no">Keep</button></span></div>` : '';
+  return `<div style="display:flex;flex-direction:column;gap:12px">
+    <div class="row between"><button class="btn quiet" data-act="back">← All ${esc(LISTS[tab].title.toLowerCase())}</button>
+      <div class="row">${CAN_PRINT ? `<button class="btn primary" data-act="print" data-id="${r.id}">Print</button>` : ''}<button class="btn${CAN_PRINT ? '' : ' primary'}" data-act="pdf" data-id="${r.id}">Download PDF</button>${ui.canWrite ? `<button class="btn" data-act="edit" data-tab="${tab}" data-id="${r.id}">Edit</button><button class="btn danger" data-act="delete" data-id="${r.id}">Delete</button>` : ''}</div></div>
+    ${confirm}${extra}
+    ${previewHtml(dd)}
+    <p class="small muted">${CAN_PRINT ? `Preview. Print and PDF use ${esc(data.settings.paper)} paper. In the print dialog, turn off headers and footers.` : `Preview. To print, download the PDF and print it from your PDF viewer. It is laid out for ${esc(data.settings.paper)} paper.`}</p>
+  </div>`;
+}
+
+function vehicleForm() {
+  const d = ui.draft;
+  return formShell(ui.id ? 'Edit vehicle' : 'Add vehicle', `
+    <fieldset><legend>Identification</legend><div class="fields">
+      ${fld('plateNo', 'Plate No.', { ph: 'e.g. SAA 1234', hint: 'Leave blank if the plate is not yet released.' })}
+      ${fld('type', 'Type of vehicle', { options: VTYPES, req: true })}
+      ${fld('make', 'Make', { req: true, ph: 'Manufacturer' })}
+      ${fld('model', 'Model')}
+      ${fld('yearModel', 'Year model', { type: 'number' })}
+      ${fld('color', 'Color')}
+      ${fld('engineNo', 'Engine No.', { req: true })}
+      ${fld('chassisNo', 'Chassis No.', { req: true })}
+      ${fld('mvFileNo', 'MV File No.')}
+      ${fld('crNo', 'Certificate of Registration No.')}
+    </div></fieldset>
+    <fieldset><legend>Ownership and property record</legend><div class="fields">
+      ${fld('ownerType', 'Registered owner', { options: [['city', data.settings.lgu], ['barangay', 'The barangay itself']], hint: 'The name that appears on the Certificate of Registration.' })}
+      ${fld('barangay', 'Barangay', { req: true, hint: 'The barangay that uses or owns the vehicle.' })}
+      ${fld('district', 'District', { options: DISTRICTS, blank: 'Select district' })}
+      ${fld('propertyNo', 'Property No.')}
+      ${fld('acquisitionDate', 'Date acquired', { type: 'date' })}
+      ${fld('acquisitionCost', 'Acquisition cost (PHP)', { type: 'number', step: '0.01' })}
+      ${fld('fundSource', 'Fund', { ph: 'e.g. General Fund' })}
+      ${fld('condition', 'Condition', { options: CONDITIONS })}
+      ${fld('remarks', 'Remarks', { type: 'textarea', wide: true })}
+    </div></fieldset>`, ui.id ? 'Save changes' : 'Add vehicle')
+    + (ui.id && d ? `<div class="row" style="margin-top:12px">${ui.confirm === ui.id ? `<span class="err row"><span>Remove this vehicle from the registry?</span><button class="btn danger" data-act="veh-delete-yes" data-id="${ui.id}">Remove</button><button class="btn" data-act="delete-no">Keep</button></span>` : `<button class="btn danger" data-act="delete" data-id="${ui.id}">Remove vehicle</button>`}</div>` : '');
+}
+function receiptForm() {
+  return formShell(ui.id ? 'Edit receipt' : 'Issue a receipt', `
+    <fieldset><legend>Vehicle and receipt</legend><div class="fields">
+      ${fld('vehicleId', 'Vehicle', { options: vehOptions(), req: true, blank: 'Select vehicle', wide: true })}
+      ${fld('parNo', 'PAR No.', { req: true })}
+      ${fld('date', 'Date of issue', { type: 'date', req: true })}
+    </div></fieldset>
+    <fieldset><legend>Accountable official</legend><div class="fields">
+      ${fld('officialName', 'Full name', { req: true })}
+      ${fld('position', 'Position', { req: true, list: 'dl-pos' })}
+      ${fld('barangay', 'Barangay', { req: true })}
+      ${fld('termEnds', 'Term or assignment ends', { type: 'date', hint: 'Optional. For your own follow-up.' })}
+    </div></fieldset>
+    <fieldset><legend>Custody details</legend><div class="fields">
+      ${fld('odometer', 'Odometer on issuance (km)', { type: 'number', step: '1' })}
+      ${fld('garage', 'Garage', { ph: 'Where the vehicle is kept when not in use' })}
+      ${fld('drivers', 'Designated driver/s', { ph: "Name and driver's license no.", wide: true })}
+      ${fld('accessories', 'Tools and accessories turned over', { ph: 'Spare tire, jack, tire wrench, early warning device, keys', wide: true })}
+      ${fld('remarks', 'Remarks', { type: 'textarea', wide: true })}
+    </div></fieldset>
+    <fieldset><legend>Signatories</legend><div class="fields">
+      ${fld('issuedByName', 'Issued by')}
+      ${fld('issuedByPosition', 'Position of issuing officer')}
+      ${fld('notedName', 'Noted by')}
+      ${fld('notedPosition', 'Position')}
+      ${fld('witness1', 'Witness 1')}
+      ${fld('witness2', 'Witness 2')}
+    </div></fieldset>`, ui.id ? 'Save changes' : 'Issue receipt');
+}
+function tripForm() {
+  return formShell(ui.id ? 'Edit trip ticket' : 'New trip ticket', `
+    <fieldset><legend>Part A. Authorization</legend><div class="fields">
+      ${fld('vehicleId', 'Vehicle', { options: vehOptions(), req: true, blank: 'Select vehicle', wide: true })}
+      ${fld('ticketNo', 'Trip Ticket No.', { req: true })}
+      ${fld('date', 'Date of trip', { type: 'date', req: true })}
+      ${fld('driver', 'Driver', { req: true })}
+      ${fld('passengers', 'Authorized passenger/s')}
+      ${fld('destination', 'Place/s to be visited', { req: true, wide: true })}
+      ${fld('purpose', 'Purpose', { req: true, wide: true })}
+      ${fld('authName', 'Authorized by', { req: true })}
+      ${fld('authPosition', 'Position', { list: 'dl-pos' })}
+    </div></fieldset>
+    <fieldset><legend>Part B. Record of travel</legend>
+      <p class="small muted">Leave these blank to print lines for the driver to fill in by hand.</p>
+      <div class="fields">
+      ${fld('depOffice', 'Departure from office or garage', { type: 'time' })}
+      ${fld('arrDest', 'Arrival at destination', { type: 'time' })}
+      ${fld('depDest', 'Departure from destination', { type: 'time' })}
+      ${fld('arrOffice', 'Arrival back at office or garage', { type: 'time' })}
+      ${fld('odoStart', 'Odometer at start (km)', { type: 'number', step: '0.1' })}
+      ${fld('odoEnd', 'Odometer at end (km)', { type: 'number', step: '0.1' })}
+      ${fld('distance', 'Approximate distance (km)', { type: 'number', step: '0.1', hint: 'Blank uses the odometer difference.' })}
+      ${fld('fuelBalance', 'Fuel balance in tank (liters)', { type: 'number', step: '0.01' })}
+      ${fld('fuelIssued', 'Fuel issued from stock (liters)', { type: 'number', step: '0.01' })}
+      ${fld('fuelPurchased', 'Fuel purchased on trip (liters)', { type: 'number', step: '0.01' })}
+      ${fld('fuelUsed', 'Fuel used on trip (liters)', { type: 'number', step: '0.01', hint: 'The end balance is computed on the form.' })}
+      ${fld('gearOil', 'Gear oil issued (liters)', { type: 'number', step: '0.01' })}
+      ${fld('lubeOil', 'Lubricating oil issued (liters)', { type: 'number', step: '0.01' })}
+      ${fld('grease', 'Grease issued (kg)', { type: 'number', step: '0.01' })}
+      ${fld('remarks', 'Remarks', { type: 'textarea', wide: true })}
+    </div></fieldset>`, ui.id ? 'Save changes' : 'Save trip ticket');
+}
+function turnoverForm() {
+  const d = ui.draft || {}, checks = d.checks || [];
+  return formShell(ui.id ? 'Edit turnover report' : 'New turnover report', `
+    <fieldset><legend>Vehicle and transaction</legend><div class="fields">
+      ${fld('vehicleId', 'Vehicle', { options: vehOptions(), req: true, blank: 'Select vehicle', wide: true })}
+      ${fld('docNo', 'Report No.', { req: true })}
+      ${fld('date', 'Date of turnover', { type: 'date', req: true })}
+      ${fld('type', 'Transaction', { options: TURN_TYPES })}
+      ${fld('reason', 'Reason', { options: TURN_REASONS })}
+      ${fld('odometer', 'Odometer (km)', { type: 'number', step: '1' })}
+      ${fld('fuelLevel', 'Fuel level', { ph: 'e.g. half tank' })}
+      ${fld('condition', 'Condition on turnover', { options: CONDITIONS })}
+    </div></fieldset>
+    <fieldset><legend>Inspection checklist</legend><div class="checks">
+      ${CHECK_ITEMS.map((item, n) => { const c = checks[n] || {}; return `<div class="check"><span>${esc(item)}</span>
+        <select id="f-turnover-chk${n}" name="chk${n}" aria-label="Status: ${esc(item)}">${CHECK_STATUS.map(s => `<option${(c.status || 'OK') === s ? ' selected' : ''}>${s}</option>`).join('')}</select>
+        <input id="f-turnover-note${n}" name="note${n}" value="${esc(c.note || '')}" placeholder="Notes and defects" aria-label="Notes: ${esc(item)}" autocomplete="off"></div>`; }).join('')}
+    </div></fieldset>
+    <fieldset><legend>Parties</legend><div class="fields">
+      ${fld('fromName', 'Turned over by', { req: true })}
+      ${fld('fromPosition', 'Position', { list: 'dl-pos' })}
+      ${fld('fromOffice', 'Barangay or office')}
+      ${fld('toName', 'Received by', { req: true })}
+      ${fld('toPosition', 'Position', { list: 'dl-pos' })}
+      ${fld('toOffice', 'Barangay or office')}
+      ${fld('inspName', 'Inspected by')}
+      ${fld('inspPosition', 'Position of inspector')}
+      ${fld('remarks', 'Remarks', { type: 'textarea', wide: true })}
+    </div></fieldset>`, ui.id ? 'Save changes' : 'Save turnover report');
+}
+function auditView() {
+  const groups = auditDuplicates();
+  const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
+  const rows = groups.map(g => `<tr><td>${esc(g.label)}</td><td class="num">${esc(g.value || '')}</td><td>${g.records.length}</td><td>${g.records.map(r => {
+    if (g.label === 'PAR No.') return `PAR ${esc(r.parNo || '')} · ${esc(r.officialName || '')}`;
+    if (g.label === 'Trip Ticket No.') return `${esc(r.ticketNo || '')} · ${esc(r.driver || '')}`;
+    if (g.label === 'Turnover Report No.') return `${esc(r.docNo || '')} · ${esc(r.fromName || '')}`;
+    if (g.label === 'Multiple active issuances') return `${esc(r.parNo || '')} · ${esc(r.officialName || '')}`;
+    return `${plateChip(r)} ${esc(vehLabel(r))}`;
+  }).join('<br>')}</td></tr>`).join('');
+  return `<section class="panel"><div class="panel-head"><div><h2>Duplicate audit</h2><p class="small muted">Checks identifiers and document numbers that must be unique.</p></div><button class="btn" data-act="xlsx">Export to Excel</button></div>
+    <div class="panel-body"><div class="stats"><div class="stat"><b>${groups.length}</b><span>duplicate groups</span></div><div class="stat"><b>${totalRecords}</b><span>records involved</span></div></div>
+    ${groups.length ? `<p class="note warn" style="margin-top:12px">Existing duplicates are never deleted automatically. Review each group and correct the source record. New saves and imports are blocked from creating another duplicate.</p>` : `<p class="note" style="margin-top:12px">No duplicates found. Vehicle identifiers, PAR numbers, trip ticket numbers and turnover report numbers are unique.</p>`}</div>
+    ${groups.length ? `<div class="table-wrap"><table class="list"><thead><tr><th>Field</th><th>Duplicate value</th><th>Count</th><th>Records</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}</section>`;
+}
+
+function settingsView() {
+  const s = data.settings; ui.editing = ui.canWrite; ui.draft = s;
+  const dis = ui.canWrite ? '' : ' disabled';
+  return `<section class="panel"><div class="panel-head"><h2>Letterhead, signatories and terms</h2></div><div class="panel-body">
+    <form class="entry" data-form="settings"><fieldset${dis}><legend>Letterhead</legend><div class="fields">
+      ${fld('header1', 'First line')}${fld('header2', 'Second line')}${fld('office', 'Issuing office')}
+      ${fld('lgu', 'Owner name for city vehicles', { hint: 'As it appears on the Certificate of Registration.' })}
+      ${fld('place', 'Place of signing')}
+      ${fld('parTitle', 'Title of the receipt', { options: [['PROPERTY ACKNOWLEDGMENT RECEIPT', 'Property Acknowledgment Receipt (COA form name)'], ['PROPERTY ACCOUNTABILITY RECEIPT', 'Property Accountability Receipt']] })}
+      ${fld('paper', 'Paper size', { options: [['A4', 'A4 (210 × 297 mm)'], ['Legal', 'Long bond (8.5 × 13 in)'], ['Letter', 'Short bond (8.5 × 11 in)']] })}
+    </div></fieldset>
+    <fieldset${dis}><legend>Default signatories</legend><div class="fields">
+      ${fld('gsoName', 'Head of issuing office', { ph: 'Full name' })}${fld('gsoPosition', 'Position')}
+      ${fld('notedName', 'Noted by', { ph: 'Full name' })}${fld('notedPosition', 'Position')}
+      ${fld('auditor', 'Auditor to be notified of loss')}
+    </div></fieldset>
+    <fieldset${dis}><legend>Terms</legend><div class="fields">
+      ${fld('legalBasis', 'Legal basis line printed on the receipt', { type: 'textarea', wide: true })}
+      ${fld('extraTerms', 'Additional conditions of the undertaking', { type: 'textarea', rows: 4, wide: true, hint: 'One condition per line. These are added after the thirteen standard conditions.' })}
+    </div></fieldset>
+    <div id="form-err" class="err" role="alert" hidden></div>
+    ${ui.canWrite ? `<div class="row"><button class="btn primary" type="submit">Save settings</button></div>` : ''}</form>
+  </div></section>
+  <p class="note" style="margin-top:14px">The forms follow the usual Property Acknowledgment Receipt and Driver's Trip Ticket layouts. Have the General Services Office, the City Legal Office and the resident auditor review the wording before first use.</p>
+  <p class="note" style="margin-top:10px">Duplicate protection is enabled for Plate No., Engine No., Chassis No., MV File No., CR No., Property No., PAR No., Trip Ticket No. and Turnover Report No. Use the Duplicate audit tab to review older or imported records.</p>`;
+}
+
+/* ---------- actions ---------- */
+function go(tab, mode = 'list', id = null, draft = null) {
+  ui.tab = tab; ui.mode = mode; ui.id = id; ui.draft = draft; ui.confirm = null;
+  try { history.replaceState(null, '', '#' + tab); } catch (e) { /* hash not writable here */ }
+  render();
+  try { window.scrollTo(0, 0); } catch (e) { /* no-op */ }
+}
+function newDraft(tab, vehicleId) {
+  const s = data.settings, v = veh(vehicleId), i = v && activeIss(v.id), city = !v || v.ownerType !== 'barangay';
+  if (tab === 'registry') return { ownerType: 'city', condition: 'Serviceable', type: 'Multicab' };
+  if (tab === 'receipts') return { vehicleId: vehicleId || '', parNo: nextNo('PAR', data.issuances, 'parNo'), date: today(), position: 'Punong Barangay', barangay: v ? v.barangay : '',
+    issuedByName: city ? s.gsoName : '', issuedByPosition: city ? s.gsoPosition : 'Barangay Treasurer', notedName: city ? s.notedName : '', notedPosition: city ? s.notedPosition : 'Punong Barangay' };
+  if (tab === 'trips') return { vehicleId: vehicleId || '', ticketNo: nextNo('TT', data.trips, 'ticketNo'), date: today(), driver: i ? String(i.drivers || '').split(/[,;(]/)[0].trim() : '', authName: i ? i.officialName : '', authPosition: i ? i.position : '' };
+  return { vehicleId: vehicleId || '', docNo: nextNo('VTR', data.turnovers, 'docNo'), date: today(), type: 'return', reason: 'End of term', condition: v && v.condition || 'Serviceable',
+    fromName: i ? i.officialName : '', fromPosition: i ? i.position : '', fromOffice: i && i.barangay ? 'Barangay ' + i.barangay : '',
+    toName: s.gsoName, toPosition: s.gsoPosition, toOffice: s.office, inspName: '', inspPosition: '' };
+}
+function showErr(msg) { const e = document.getElementById('form-err'); if (e) { e.textContent = msg; e.hidden = false; e.scrollIntoView({ block: 'nearest' }); } else toast(msg); }
+function onVehicleChange(form) {
+  const v = veh(form.elements.vehicleId.value); if (!v) return;
+  const i = activeIss(v.id), set = (n, val) => { const el = form.elements[n]; if (el && !el.value && val) el.value = val; };
+  if (ui.tab === 'receipts') set('barangay', v.barangay);
+  if (ui.tab === 'trips' && i) { set('authName', i.officialName); set('authPosition', i.position); set('driver', String(i.drivers || '').split(/[,;(]/)[0].trim()); }
+  if (ui.tab === 'turnover' && i) { set('fromName', i.officialName); set('fromPosition', i.position); set('fromOffice', i.barangay ? 'Barangay ' + i.barangay : ''); }
+}
+
+const actions = {
+  tab: (id, b) => go(b.dataset.tab),
+  new: (id, b) => go(b.dataset.tab, 'form', null, newDraft(b.dataset.tab)),
+  start: (id, b) => go(b.dataset.tab, 'form', null, newDraft(b.dataset.tab, id)),
+  open: (id, b) => go(b.dataset.tab, 'doc', id),
+  edit: (id, b) => { const tab = b.dataset.tab, r = data[COL[tab]].find(x => x.id === id); if (r) go(tab, 'form', id, { ...r }); },
+  cancel: () => (ui.id && ui.tab !== 'registry') ? go(ui.tab, 'doc', ui.id) : go(ui.tab),
+  back: () => go(ui.tab),
+  delete: id => { ui.confirm = id; render(); },
+  'delete-no': () => { ui.confirm = null; render(); },
+  'delete-yes': async id => {
+    const tab = ui.tab, col = COL[tab];
+    try {
+      if (tab === 'turnover') {
+        const iss = data.issuances.find(i => i.closedById === id);
+        if (iss && !activeIss(iss.vehicleId)) { const { closedDate, closedBy, closedById, ...rest } = iss; await put('issuances', { ...rest, status: 'active' }); }
+      }
+      await del(col, id); toast('Record deleted.'); go(tab);
+    } catch (e) { toast(writeFailed(e)); render(); }
+  },
+  'veh-delete-yes': async id => {
+    const used = data.issuances.some(r => r.vehicleId === id) || data.trips.some(r => r.vehicleId === id) || data.turnovers.some(r => r.vehicleId === id);
+    if (used) { ui.confirm = null; render(); toast('This vehicle has receipts, trip tickets or turnover reports. Delete those records first.'); return; }
+    try { await del('vehicles', id); toast('Vehicle removed.'); go('registry'); } catch (e) { toast(writeFailed(e)); }
+  },
+  'veh-quick-delete': async id => {
+    const v = veh(id); if (!v) return;
+    if (!confirm(`Remove ${v.plateNo || vehLabel(v)} from the registry?`)) return;
+    const used = data.issuances.some(r => r.vehicleId === id) || data.trips.some(r => r.vehicleId === id) || data.turnovers.some(r => r.vehicleId === id);
+    if (used) { toast('This vehicle has linked receipts, trip tickets or turnover reports. Delete those records first.'); return; }
+    try { await del('vehicles', id); toast('Vehicle removed.'); render(); } catch (e) { toast(writeFailed(e)); }
+  },
+  'quick-delete': async (id, b) => {
+    const tab = b.dataset.tab || ui.tab, col = COL[tab], r = data[col] && data[col].find(x => x.id === id);
+    if (!r) return;
+    const label = r.parNo || r.ticketNo || r.docNo || 'this record';
+    if (!confirm(`Delete ${label}? This cannot be undone.`)) return;
+    try {
+      if (tab === 'turnover') {
+        const iss = data.issuances.find(i => i.closedById === id);
+        if (iss && !activeIss(iss.vehicleId)) { const { closedDate, closedBy, closedById, ...rest } = iss; await put('issuances', { ...rest, status: 'active' }); }
+      }
+      await del(col, id); toast('Record deleted.'); render();
+    } catch (e) { toast(writeFailed(e)); }
+  },
+  'receipt-from-turnover': id => {
+    const r = data.turnovers.find(x => x.id === id); if (!r) return;
+    const d = newDraft('receipts', r.vehicleId);
+    go('receipts', 'form', null, { ...d, officialName: r.toName || '', position: r.toPosition || d.position, odometer: r.odometer || '' });
+  },
+  pdf: (id, b) => { const tab = ui.tab, r = data[COL[tab]].find(x => x.id === id); if (!r) return; const v = veh(r.vehicleId); offer(`${fileSafe(r[FILEKEY[tab]])}${v && v.plateNo ? '_' + fileSafe(v.plateNo) : ''}.pdf`, () => pdfBlob(BUILD[tab](r)), b); },
+  blank: (id, b) => offer(`${BLANKNAME[ui.tab]}.pdf`, () => pdfBlob(BUILD[ui.tab]({})), b),
+  inventory: (id, b) => offer(`Vehicle-Inventory_${today()}.pdf`, () => pdfBlob(inventoryDoc()), b),
+  xlsx: (id, b) => offer(`Barangay-Vehicle-Records_${today()}.xlsx`, xlsxBlob, b),
+  print: id => { const r = data[COL[ui.tab]].find(x => x.id === id); if (r) printDoc(BUILD[ui.tab](r)); },
+  'print-blank': () => printDoc(BUILD[ui.tab]({})),
+  'print-inventory': () => printDoc(inventoryDoc()),
+  import: () => { const i = document.getElementById('imp'); if (i) { i.value = ''; i.click(); } },
+  'import-no': () => { ui.importPlan = null; render(); },
+  'import-yes': async (id, b) => {
+    const p = ui.importPlan; if (!p) return;
+    b.disabled = true; b.textContent = 'Importing…';
+    let done = 0;
+    try { for (const v of [...p.adds, ...p.updates]) { await put('vehicles', v); done++; } toast(`${done} ${done === 1 ? 'vehicle' : 'vehicles'} imported.`); }
+    catch (e) { toast(`${done} imported, then stopped. ${writeFailed(e)}`); }
+    ui.importPlan = null; go('registry');
+  }
+};
+
+const submitters = {
+  async registry(f) {
+    const o = Object.fromEntries(new FormData(f));
+    for (const [k] of UNIQUE_VEHICLE_FIELDS) o[k] = String(o[k] || '').trim().toUpperCase();
+    o.barangay = String(o.barangay || '').trim().replace(/^(brgy\.?|barangay)\s+/i, '');
+    const conflicts = vehicleDuplicateConflicts(o, ui.id);
+    if (conflicts.length) {
+      const c = conflicts[0];
+      return showErr(`${c.label} ${o[c.key]} is already used by ${c.hit.plateNo || vehLabel(c.hit)}. Duplicate vehicle identifiers are not allowed.`);
+    }
+    const old = ui.id ? veh(ui.id) : {};
+    await put('vehicles', { ...old, ...o, ...(ui.id ? { id: ui.id } : {}) });
+    toast(ui.id ? 'Vehicle saved.' : 'Vehicle added.'); go('registry');
+  },
+  async receipts(f) {
+    const o = Object.fromEntries(new FormData(f));
+    o.barangay = String(o.barangay || '').trim().replace(/^(brgy\.?|barangay)\s+/i, '');
+    const other = data.issuances.find(i => i.vehicleId === o.vehicleId && i.status !== 'closed' && i.id !== ui.id);
+    const old = ui.id ? data.issuances.find(i => i.id === ui.id) : null;
+    if (other && (!old || old.status !== 'closed')) return showErr(`This vehicle is still issued to ${other.officialName || 'another official'} under ${other.parNo || 'an active receipt'}. Record its turnover first.`);
+    o.parNo = String(o.parNo || '').trim().toUpperCase();
+    if (docDuplicate(data.issuances, 'parNo', o.parNo, ui.id)) return showErr(`PAR No. ${o.parNo} is already used. Enter a different number.`);
+    const id = await put('issuances', { ...(old || { status: 'active' }), ...o, ...(ui.id ? { id: ui.id } : {}) });
+    toast(ui.id ? 'Receipt saved.' : 'Receipt issued.'); go('receipts', 'doc', id);
+  },
+  async trips(f) {
+    const o = Object.fromEntries(new FormData(f));
+    o.ticketNo = String(o.ticketNo || '').trim().toUpperCase();
+    if (docDuplicate(data.trips, 'ticketNo', o.ticketNo, ui.id)) return showErr(`Trip Ticket No. ${o.ticketNo} is already used. Enter a different number.`);
+    if (o.odoStart !== '' && o.odoEnd !== '' && Number(o.odoEnd) < Number(o.odoStart)) return showErr('The odometer reading at the end is lower than the reading at the start.');
+    const old = ui.id ? data.trips.find(i => i.id === ui.id) : {};
+    const id = await put('trips', { ...old, ...o, ...(ui.id ? { id: ui.id } : {}) });
+    toast('Trip ticket saved.'); go('trips', 'doc', id);
+  },
+  async turnover(f) {
+    const raw = Object.fromEntries(new FormData(f)), o = {};
+    for (const [k, v] of Object.entries(raw)) if (!/^(chk|note)\d+$/.test(k)) o[k] = v;
+    o.checks = CHECK_ITEMS.map((item, n) => ({ item, status: raw['chk' + n] || '', note: raw['note' + n] || '' }));
+    o.docNo = String(o.docNo || '').trim().toUpperCase();
+    const old = ui.id ? data.turnovers.find(i => i.id === ui.id) : null;
+    const iss = old ? null : activeIss(o.vehicleId);
+    if (!old && !iss) return showErr('This vehicle has no active receipt to close. Issue a receipt first, or choose another vehicle.');
+    if (docDuplicate(data.turnovers, 'docNo', o.docNo, ui.id)) return showErr(`Report No. ${o.docNo} is already used. Enter a different number.`);
+    if (iss) o.parNo = iss.parNo || '';
+    const id = await put('turnovers', { ...(old || {}), ...o, ...(ui.id ? { id: ui.id } : {}) });
+    if (iss) await put('issuances', { ...iss, status: 'closed', closedDate: o.date, closedBy: o.docNo, closedById: id });
+    const v = veh(o.vehicleId);
+    if (v && o.condition && v.condition !== o.condition) await put('vehicles', { ...v, condition: o.condition });
+    toast(iss ? `Turnover saved. ${iss.parNo || 'The receipt'} is now closed.` : 'Turnover report saved.'); go('turnover', 'doc', id);
+  },
+  async settings(f) {
+    const o = Object.fromEntries(new FormData(f));
+    await putSettings({ ...data.settings, ...o });
+    toast('Settings saved.'); render();
+  }
+};
+
+app.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+  const fn = actions[b.dataset.act]; if (fn) fn(b.dataset.id, b);
+});
+app.addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, fn = submitters[f.dataset.form]; if (!fn) return;
+  const btn = f.querySelector('button[type="submit"]'); if (btn) btn.disabled = true;
+  try { await fn(f); } catch (err) { showErr(writeFailed(err)); }
+  if (btn && btn.isConnected) btn.disabled = false;
+});
+app.addEventListener('input', e => { if (e.target.id === 'q') { ui.q = e.target.value; const r = document.getElementById('rows'); if (r) r.innerHTML = registryRows(); } });
+app.addEventListener('change', e => {
+  if (e.target.id === 'flt') { ui.flt = e.target.value; const r = document.getElementById('rows'); if (r) r.innerHTML = registryRows(); }
+  if (e.target.name === 'vehicleId' && e.target.form) onVehicleChange(e.target.form);
+  if (e.target.id === 'imp' && e.target.files && e.target.files[0]) {
+    readImport(e.target.files[0]).then(p => { ui.importPlan = p; go('registry'); })
+      .catch(() => toast('That file could not be read. Use an Excel (.xlsx) or CSV file with one vehicle per row.'));
+  }
+});
+
+boot();
+})();
+/*APP-END*/
+</script>
+
+</body></html>
